@@ -232,26 +232,24 @@ if($newprint == 1)
                     <th align="right">Tax %</th>
                     <th align="right">Taxable Amount</th>
                     <?php
-                    if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
-                    {
+                    if($this->isvatgst == 1) {
+                        // VAT Business - always show VAT
+                    ?>
+                    <th align="right">VAT</th>
+                    <?php
+                    } else {
+                        // GST Business - check state
+                        if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+                        {
                     ?>
                     <th align="right">SGST</th>
                     <th align="right">CGST</th>
                     <?php
-                    }else{
-
-                    ?>
-                    <th align="right">
-                        <?php
-                        if($this->isvatgst == 0)
-                        {
-                            echo "IGST";
                         }else{
-                            echo "VAT";
-                        }
-                        ?>
-                    </th>
+                    ?>
+                    <th align="right">IGST</th>
                     <?php
+                        }
                     }
                     ?>
                 </tr>
@@ -272,19 +270,28 @@ if($newprint == 1)
                         <td align="right"><?= $txvl ?></td>
                         <td align="right"><?php echo price_roundof(${"tottaxableamnt" . $txvl}); ?></td>
                         <?php
-                        if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
-                        {
-                            $sgsttotal = $sgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
-                            $cgsttotal = $cgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
-                        ?>
-                        <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}/2); ?></td>
-                        <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}/2); ?></td>
-                        <?php 
-                        }else{
+                        if($this->isvatgst == 1) {
+                            // VAT Business
                             $igsttotal = $igsttotal + price_roundof(${"tottaxamnt" . $txvl});
                         ?>
                         <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}); ?></td>
-                        <?php 
+                        <?php
+                        } else {
+                            // GST Business
+                            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+                            {
+                                $sgsttotal = $sgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
+                                $cgsttotal = $cgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
+                        ?>
+                        <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}/2); ?></td>
+                        <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}/2); ?></td>
+                        <?php
+                            }else{
+                                $igsttotal = $igsttotal + price_roundof(${"tottaxamnt" . $txvl});
+                        ?>
+                        <td align="right"><?php echo price_roundof(${"tottaxamnt" . $txvl}); ?></td>
+                        <?php
+                            }
                         }
                         ?>
                     </tr>
@@ -298,16 +305,24 @@ if($newprint == 1)
                         <th align="right" style="border-top: 1px #000 solid;">Total</th>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $tottaxableamnt ?></th>
                         <?php
-                        if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
-                        {
+                        if($this->isvatgst == 1) {
+                            // VAT Business
+                        ?>
+                            <th align="right" style="border-top: 1px #000 solid;"><?= $igsttotal ?></th>
+                        <?php
+                        } else {
+                            // GST Business
+                            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+                            {
                         ?>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $sgsttotal ?></th>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $cgsttotal ?></th>
                         <?php
-                        }else{
-                            ?>
+                            }else{
+                        ?>
                             <th align="right" style="border-top: 1px #000 solid;"><?= $igsttotal ?></th>
-                            <?php
+                        <?php
+                            }
                         }
                         ?>
                     </tr>
