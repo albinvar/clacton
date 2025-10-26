@@ -289,14 +289,18 @@ if($newprint == 1)
     </thead>
     <?php
     $kn=1;
+    $totaltax = 0;
+    $totalcgst = 0;
+    $totalsgst = 0;
     if (!empty($purchaseprodcts)) {
         foreach ($purchaseprodcts as $prvl) {
+            $totaltax += $prvl->rbs_totalgst;
             ?>
             <tr class="billitemstr">
                 <td align="center"><?= $kn ?></td>
 
-                <td><?php echo $prvl->pd_productname . ' ' . $prvl->pd_productcode; ?> 
-                <?php 
+                <td><?php echo $prvl->pd_productname . ' ' . $prvl->pd_productcode; ?>
+                <?php
                 if($remarkfield == 1 && $prvl->rbs_remarks != "")
                 {
                    echo '- ' . $prvl->rbs_remarks;
@@ -318,6 +322,8 @@ if($newprint == 1)
                     if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
                     {
                         $colspnno = '9';
+                        $totalcgst += $prvl->rbs_totalgst/2;
+                        $totalsgst += $prvl->rbs_totalgst/2;
                 ?>
                 <td align="center"><?php echo $prvl->rbs_gstpercent/2 ?></td>
                 <td align="center"><?php echo $prvl->rbs_totalgst/2 ?></td>
@@ -340,6 +346,38 @@ if($newprint == 1)
         $kn++;
     }
 }
+    // Tax Total Row
+    ?>
+    <tr>
+        <td colspan="4" align="right"><b>Tax Total</b></td>
+        <?php
+        if($this->isvatgst == 1) {
+            // VAT Business
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+        } else {
+            // GST Business
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+            {
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalcgst, 2) ?></b></td>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalsgst, 2) ?></b></td>
+        <?php
+            }else{
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+            }
+        }
+        ?>
+        <td colspan="2"></td>
+    </tr>
+    <?php
 $emptycell = 10-$kn;
 for($n=0; $n<=$emptycell; $n++)
 {
@@ -349,22 +387,32 @@ for($n=0; $n<=$emptycell; $n++)
         <td class="emtycellstyle"></td>
         <td class="emtycellstyle"></td>
         <td class="emtycellstyle"></td>
-        <?php 
-        if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
-        {
-            $colspnno = '9';
-        ?>
-        <td class="emtycellstyle"></td>
-        <td class="emtycellstyle"></td>
-        <td class="emtycellstyle"></td>
-        <td class="emtycellstyle"></td>
-        <?php 
-        }else{
+        <?php
+        if($this->isvatgst == 1) {
+            // VAT Business
             $colspnno = '7';
         ?>
         <td class="emtycellstyle"></td>
         <td class="emtycellstyle"></td>
-        <?php 
+        <?php
+        } else {
+            // GST Business
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+            {
+                $colspnno = '9';
+        ?>
+        <td class="emtycellstyle"></td>
+        <td class="emtycellstyle"></td>
+        <td class="emtycellstyle"></td>
+        <td class="emtycellstyle"></td>
+        <?php
+            }else{
+                $colspnno = '7';
+        ?>
+        <td class="emtycellstyle"></td>
+        <td class="emtycellstyle"></td>
+        <?php
+            }
         }
         ?>
         <td class="emtycellstyle"></td>
