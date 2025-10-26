@@ -65,7 +65,7 @@
                                         <li class="finyearaddbutton"><a href="<?= base_url() ?>sale/dashboard/2">Retail Proforma Invoice</a></li>
                                         <li class="finyearaddbutton"><a href="<?= base_url() ?>sale/dashboard/4">Wholesale Proforma Invoice</a></li>
                                         <li class="finyearaddbutton"><a href="<?= base_url() ?>sale/servicebill">Service Bill</a></li>
-                                        <li class="finyearaddbutton"><a href="#">Delivery Note</a></li>
+                                        <!-- <li class="finyearaddbutton"><a href="#">Delivery Note</a></li> -->
                                         <li class="finyearaddbutton"><a href="<?= base_url() ?>purchase/dashboard">Purchase Billing</a></li>
                                         <li class="finyearaddbutton"><a href="<?= base_url() ?>purchase/dashboard/1">Purchase Order</a></li>
                                         
