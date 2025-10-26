@@ -52,7 +52,11 @@
     size: A5;
   }
   .imagestyle{
-    height: 85px;
+    max-height: 85px;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
   }
   .page-header {
     height: 220px;
@@ -64,8 +68,8 @@
     height: 220px;
   }
   .tablestyle{
-    border-collapse: collapse; 
-    margin-top: 5px; 
+    border-collapse: collapse;
+    margin-top: 5px;
     font-size: 10px;
   }
   .billitemstr{
@@ -85,7 +89,11 @@
     size: A4;
   }
   .imagestyle{
-    height: 95px;
+    max-height: 95px;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
   }
   .page-header {
     height: 270px;
@@ -97,8 +105,8 @@
     height: 270px;
   }
   .tablestyle{
-    border-collapse: collapse; 
-    margin-top: 5px; 
+    border-collapse: collapse;
+    margin-top: 5px;
     font-size: 12px;
   }
   .billitemstr{

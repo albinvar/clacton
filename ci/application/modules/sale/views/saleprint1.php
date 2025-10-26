@@ -39,8 +39,24 @@
 
   .emtycellstyle{
     border-bottom: 0px;
-    border-top: 0px; 
+    border-top: 0px;
     height: 28px;
+  }
+
+  .logo-container {
+    width: 20%;
+    max-width: 150px;
+    height: 80px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .logo-container img {
+    max-width: 100%;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
   }
 
   @page {
@@ -89,18 +105,18 @@ if($newprint == 1)
     <table border="0" width="98%" cellpadding="0" cellspacing="0">
 
         <tr>
-            <td width="20%">
-                <?php 
+            <td width="20%" class="logo-container">
+                <?php
                 if($this->bulogo != "")
                 {
                     ?>
-                <img src="<?= base_url() ?>uploads/business/<?= $this->bulogo ?>" width="100%" alt="user-image">
-                <?php 
+                <img src="<?= base_url() ?>uploads/business/<?= $this->bulogo ?>" alt="Company Logo">
+                <?php
                 }
                 ?>
             </td>
             <td align="center"><u>
-                <?php 
+                <?php
                 if($type == 2){
                     echo "Proforma Invoice";
                 }else{
@@ -108,13 +124,13 @@ if($newprint == 1)
                 }
                 ?>
             </u></td>
-            <td width="20%" align="right">
-                <?php 
+            <td width="20%" class="logo-container" align="right">
+                <?php
                 if($businessdet->bu_franchiselogo != "")
                 {
                     ?>
-                <img src="<?= base_url() ?>uploads/business/<?= $businessdet->bu_franchiselogo ?>" width="80%" alt="user-image">
-                <?php 
+                <img src="<?= base_url() ?>uploads/business/<?= $businessdet->bu_franchiselogo ?>" alt="Franchise Logo" style="margin-left: auto;">
+                <?php
                 }
                 ?>
             </td>

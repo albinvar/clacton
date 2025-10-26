@@ -17,12 +17,27 @@
   }
 
   .page-header {
-    height: 190px;
+    height: 250px;
     width: 98%;
     margin-left: 5px;
   }
   .page-header-space{
-    height: 190px;
+    height: 250px;
+  }
+  .logo-container {
+    width: 20%;
+    max-width: 150px;
+    height: 80px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  .logo-container img {
+    max-width: 100%;
+    max-height: 80px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    display: block;
   }
   @page
    {
@@ -30,7 +45,7 @@
   }
   @media print {
     html, body {
-        height: 98%;    
+        height: 98%;
     }
 }
  </style>
@@ -55,11 +70,31 @@ if($newprint == 1)
     <div style="width: 97%">
     <table border="0" width="98%" cellpadding="0" cellspacing="0">
         <tr>
+            <td width="20%" class="logo-container">
+                <?php
+                if(isset($businessdet[0]->bu_logo) && $businessdet[0]->bu_logo != "")
+                {
+                    ?>
+                <img src="<?= base_url() ?>uploads/business/<?= $businessdet[0]->bu_logo ?>" alt="Company Logo">
+                <?php
+                }
+                ?>
+            </td>
             <td align="center"><u>Purchase Return</u></td>
+            <td width="20%" class="logo-container" align="right">
+                <?php
+                if(isset($businessdet[0]->bu_franchiselogo) && $businessdet[0]->bu_franchiselogo != "")
+                {
+                    ?>
+                <img src="<?= base_url() ?>uploads/business/<?= $businessdet[0]->bu_franchiselogo ?>" alt="Franchise Logo" style="margin-left: auto;">
+                <?php
+                }
+                ?>
+            </td>
         </tr>
     </table>
 
-    <table border="0" width="98%" cellpadding="0" cellspacing="0">
+    <table border="0" width="98%" cellpadding="0" cellspacing="0" style="margin-top: 5px;">
         <tr>
             <td>Bill No: <?= $purchasedet->pm_purchaseno ?></td>
             <td align="right">DATE: <?php echo date('d/m/Y', strtotime($purchasedet->pm_date)) ?> <?php echo date('H:i', strtotime($purchasedet->pm_time)) ?></td>
