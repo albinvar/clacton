@@ -122,9 +122,9 @@
                                         }
                                         ?>
                                         <li><a href="<?= base_url() ?>reports/itemwisereport">Item Wise Report</a></li>
-                                        <li><a href="<?= base_url() ?>reports/hsnreport">HSN Report</a></li>
                                         <li><a href="<?= base_url() ?>reports/taxpercentagereport">Tax% Wise Report</a></li>
                                         <?php if($this->isvatgst == 0){ ?>
+                                        <li><a href="<?= base_url() ?>reports/hsnreport">HSN Report</a></li>
                                         <li><a href="<?= base_url() ?>reports/gstrb2breport">GSTR1 B2B Report</a></li>
                                         <li><a href="<?= base_url() ?>reports/gstrb2creport">GSTR1 B2C Report</a></li>
                                         <li><a href="<?= base_url() ?>reports/creditdebitb2breport">CDN/DBN B2B Report</a></li>
