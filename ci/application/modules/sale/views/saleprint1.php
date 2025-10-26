@@ -390,35 +390,44 @@ for($n=0; $n<=$emptycell; $n++)
 }
 ?>
     <tr>
-        <td colspan="<?= $colspnno ?>" align="right">Total</td>
+        <td colspan="4" align="right"><b>Total</b></td>
+        <?php
+        if($this->isvatgst == 1) {
+            // VAT Business
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+        } else {
+            // GST Business
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+            {
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalcgst, 2) ?></b></td>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalsgst, 2) ?></b></td>
+        <?php
+            }else{
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+            }
+        }
+        ?>
+        <td align="center"></td>
         <th><?= $purchasedet->rb_totalamount ?></th>
     </tr>
 
     <tr>
-        <td rowspan="6" colspan="4">
+        <td rowspan="5" colspan="4">
             Company's Bank Details<br/>
             Bank: <b><?= $businessdet->bu_bankname ?></b><br/>
             Acc No: <b><?= $businessdet->bu_accountnumber ?></b><br/>
             IFSC: <b><?= $businessdet->bu_ifsccode ?></b><br/>
             Branch: <b><?= $businessdet->bu_bankbranch ?></b>
         </td>
-        <td colspan="<?= $colspnno-4 ?>" align="right">Tax Total</td>
-        <th><?php
-        if($this->isvatgst == 1) {
-            // VAT Business - show total VAT
-            echo number_format($totaltax, 2);
-        } else {
-            // GST Business - show total CGST+SGST or IGST
-            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
-            {
-                echo number_format($totalcgst + $totalsgst, 2);
-            }else{
-                echo number_format($totaltax, 2);
-            }
-        }
-        ?></th>
-    </tr>
-    <tr>
         <td colspan="<?= $colspnno-4 ?>" align="right">Discount</td>
         <th><?= $purchasedet->rb_discount ?></th>
     </tr>
