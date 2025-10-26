@@ -346,38 +346,6 @@ if($newprint == 1)
         $kn++;
     }
 }
-    // Tax Total Row
-    ?>
-    <tr>
-        <td colspan="4" align="right"><b>Tax Total</b></td>
-        <?php
-        if($this->isvatgst == 1) {
-            // VAT Business
-        ?>
-        <td align="center"></td>
-        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
-        <?php
-        } else {
-            // GST Business
-            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
-            {
-        ?>
-        <td align="center"></td>
-        <td align="center"><b><?php echo number_format($totalcgst, 2) ?></b></td>
-        <td align="center"></td>
-        <td align="center"><b><?php echo number_format($totalsgst, 2) ?></b></td>
-        <?php
-            }else{
-        ?>
-        <td align="center"></td>
-        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
-        <?php
-            }
-        }
-        ?>
-        <td colspan="2"></td>
-    </tr>
-    <?php
 $emptycell = 10-$kn;
 for($n=0; $n<=$emptycell; $n++)
 {
@@ -421,6 +389,35 @@ for($n=0; $n<=$emptycell; $n++)
     <?php
 }
 ?>
+    <tr>
+        <td colspan="4" align="right"><b>Tax Total</b></td>
+        <?php
+        if($this->isvatgst == 1) {
+            // VAT Business
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+        } else {
+            // GST Business
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
+            {
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalcgst, 2) ?></b></td>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalsgst, 2) ?></b></td>
+        <?php
+            }else{
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+            }
+        }
+        ?>
+        <td colspan="2"></td>
+    </tr>
     <tr>
         <td colspan="<?= $colspnno ?>" align="right">Total</td>
         <th><?= $purchasedet->rb_totalamount ?></th>
