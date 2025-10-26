@@ -162,7 +162,7 @@ if($newprint == 1)
                 ?>
                 Ph: <?= implode(', ', $phnarr) ?><br/>
                 Email: <?= $businessdet->bu_email ?><br/>
-                GSTIN: <?= $businessdet->bu_gstnumber ?>
+                <?= $this->isvatgstname ?> No: <?= $businessdet->bu_gstnumber ?>
             </td>
             <td>
                 <?php 
@@ -175,7 +175,7 @@ if($newprint == 1)
                     ?></h4>
                     <?= $custdet->ct_address ?><br/>
                     Ph: <?= $custdet->ct_phone ?><br/>
-                    GSTIN : <?= $custdet->ct_gstin ?>
+                    <?= $this->isvatgstname ?> No: <?= $custdet->ct_gstin ?>
                     <?php
                 }else{
                 ?>
@@ -184,7 +184,7 @@ if($newprint == 1)
                 ?></h4>
                 <?= $purchasedet->rb_address ?><br/>
                 Ph: <?= $purchasedet->rb_phone ?><br/>
-                GSTIN : <?= $purchasedet->rb_gstno ?>
+                <?= $this->isvatgstname ?> No: <?= $purchasedet->rb_gstno ?>
                 <?php 
                 }
                 ?>
