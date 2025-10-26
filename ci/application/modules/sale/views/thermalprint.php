@@ -231,13 +231,13 @@ if($newprint == 1)
                 <tr>
                     <th align="right">Tax %</th>
                     <th align="right">Taxable Amount</th>
-                    <?php 
-                    if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+                    <?php
+                    if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
                     {
                     ?>
                     <th align="right">SGST</th>
                     <th align="right">CGST</th>
-                    <?php 
+                    <?php
                     }else{
 
                     ?>
@@ -251,7 +251,7 @@ if($newprint == 1)
                         }
                         ?>
                     </th>
-                    <?php 
+                    <?php
                     }
                     ?>
                 </tr>
@@ -271,8 +271,8 @@ if($newprint == 1)
                     <tr>
                         <td align="right"><?= $txvl ?></td>
                         <td align="right"><?php echo price_roundof(${"tottaxableamnt" . $txvl}); ?></td>
-                        <?php 
-                        if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+                        <?php
+                        if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
                         {
                             $sgsttotal = $sgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
                             $cgsttotal = $cgsttotal + price_roundof(${"tottaxamnt" . $txvl}/2);
@@ -297,13 +297,13 @@ if($newprint == 1)
                     <tr>
                         <th align="right" style="border-top: 1px #000 solid;">Total</th>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $tottaxableamnt ?></th>
-                        <?php 
-                        if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+                        <?php
+                        if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
                         {
                         ?>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $sgsttotal ?></th>
                         <th align="right" style="border-top: 1px #000 solid;"><?= $cgsttotal ?></th>
-                        <?php 
+                        <?php
                         }else{
                             ?>
                             <th align="right" style="border-top: 1px #000 solid;"><?= $igsttotal ?></th>

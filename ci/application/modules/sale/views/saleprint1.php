@@ -234,37 +234,46 @@ if($newprint == 1)
             <th rowspan="2" align="left">Item Name</th>
             <th rowspan="2">Unit Price</th>
             <th rowspan="2">Total Qty</th>
-            <?php 
-            if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+            <?php
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
             {
             ?>
             <th colspan="2">CGST</th>
             <th colspan="2">SGST</th>
-            <?php 
+            <?php
             }else{
             ?>
-            <th colspan="2">IGST</th>
-            <?php 
+            <th colspan="2">
+                <?php
+                if($this->isvatgst == 0)
+                {
+                    echo "IGST";
+                }else{
+                    echo "VAT";
+                }
+                ?>
+            </th>
+            <?php
             }
             ?>
             <th rowspan="2">Discount</th>
             <th rowspan="2">Total Price</th>
         </tr>
         <tr>
-            <?php 
-            if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+            <?php
+            if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
             {
             ?>
             <th>%</th>
             <th>Amt</th>
             <th>%</th>
             <th>Amt</th>
-            <?php 
+            <?php
             }else{
             ?>
             <th>%</th>
             <th>Amt</th>
-            <?php 
+            <?php
             }
             ?>
         </tr>
@@ -288,8 +297,8 @@ if($newprint == 1)
                 </td>
                 <td align="center"><?php echo $prvl->rbs_netamount ?></td>
                 <td align="center"><?php echo $prvl->rbs_qty ?></td>
-                <?php 
-                if($purchasedet->rb_state == '4028' || $purchasedet->rb_state == '')
+                <?php
+                if(($purchasedet->rb_state == $businessdet->bu_state || $purchasedet->rb_state == '') || $businessdet->bu_country != '101')
                 {
                     $colspnno = '9';
                 ?>
@@ -297,13 +306,13 @@ if($newprint == 1)
                 <td align="center"><?php echo $prvl->rbs_totalgst/2 ?></td>
                 <td align="center"><?php echo $prvl->rbs_gstpercent/2 ?></td>
                 <td align="center"><?php echo $prvl->rbs_totalgst/2 ?></td>
-                <?php 
+                <?php
                 }else{
                     $colspnno = '7';
                 ?>
                 <td align="center"><?php echo $prvl->rbs_gstpercent ?></td>
                 <td align="center"><?php echo $prvl->rbs_totalgst ?></td>
-                <?php 
+                <?php
                 }
                 ?>
                 <td align="center"><?php echo $prvl->rbs_totaldiscount; ?></td>
