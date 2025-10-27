@@ -160,46 +160,54 @@ if($newprint == 1)
             <th rowspan="2" align="left">Item Name</th>
             <th rowspan="2">Unit Price</th>
             <th rowspan="2">Total Qty</th>
-            <?php 
-            if($purchasedet->sp_state == '4028')
-            {
+            <?php
+            if($this->isvatgst == 1) {
+                // VAT Business - always show VAT
+            ?>
+            <th colspan="2">VAT</th>
+            <?php
+            } else {
+                // GST Business - check state
+                if(($purchasedet->sp_state == $businessdet[0]->bu_state || $purchasedet->sp_state == '') || $businessdet[0]->bu_country != '101')
+                {
             ?>
             <th colspan="2">CGST</th>
             <th colspan="2">SGST</th>
-            <?php 
-            }else{
-            ?>
-            <th colspan="2">
-                <?php
-                if($this->isvatgst == 0)
-                {
-                    echo "IGST";
+            <?php
                 }else{
-                    echo "VAT";
+            ?>
+            <th colspan="2">IGST</th>
+            <?php
                 }
-                ?>
-            </th>
-            <?php 
             }
             ?>
             <th rowspan="2">Discount</th>
             <th rowspan="2">Total Price</th>
         </tr>
         <tr>
-            <?php 
-            if($purchasedet->sp_state == '4028')
-            {
+            <?php
+            if($this->isvatgst == 1) {
+                // VAT Business
+            ?>
+            <th>%</th>
+            <th>Amt</th>
+            <?php
+            } else {
+                // GST Business
+                if(($purchasedet->sp_state == $businessdet[0]->bu_state || $purchasedet->sp_state == '') || $businessdet[0]->bu_country != '101')
+                {
             ?>
             <th>%</th>
             <th>Amt</th>
             <th>%</th>
             <th>Amt</th>
-            <?php 
-            }else{
+            <?php
+                }else{
             ?>
             <th>%</th>
             <th>Amt</th>
-            <?php 
+            <?php
+                }
             }
             ?>
         </tr>
@@ -216,22 +224,32 @@ if($newprint == 1)
                 <td><?php echo $prvl->pd_productname . ' ' . $prvl->pd_productcode; ?></td>
                 <td align="center"><?php echo $prvl->ps_purchaseprice ?></td>
                 <td align="center"><?php echo $prvl->ps_qty ?></td>
-                <?php 
-                if($purchasedet->sp_state == '4028')
-                {
-                    $colspnno = '9';
-                ?>
-                <td align="center"><?php echo $prvl->ps_gstpercent/2 ?></td>
-                <td align="center"><?php echo $prvl->ps_totalgst/2 ?></td>
-                <td align="center"><?php echo $prvl->ps_gstpercent/2 ?></td>
-                <td align="center"><?php echo $prvl->ps_totalgst/2 ?></td>
-                <?php 
-                }else{
+                <?php
+                if($this->isvatgst == 1) {
+                    // VAT Business
                     $colspnno = '7';
                 ?>
                 <td align="center"><?php echo $prvl->ps_gstpercent ?></td>
                 <td align="center"><?php echo $prvl->ps_totalgst ?></td>
-                <?php 
+                <?php
+                } else {
+                    // GST Business
+                    if(($purchasedet->sp_state == $businessdet[0]->bu_state || $purchasedet->sp_state == '') || $businessdet[0]->bu_country != '101')
+                    {
+                        $colspnno = '9';
+                ?>
+                <td align="center"><?php echo $prvl->ps_gstpercent/2 ?></td>
+                <td align="center"><?php echo $prvl->ps_totalgst/2 ?></td>
+                <td align="center"><?php echo $prvl->ps_gstpercent/2 ?></td>
+                <td align="center"><?php echo $prvl->ps_totalgst/2 ?></td>
+                <?php
+                    }else{
+                        $colspnno = '7';
+                ?>
+                <td align="center"><?php echo $prvl->ps_gstpercent ?></td>
+                <td align="center"><?php echo $prvl->ps_totalgst ?></td>
+                <?php
+                    }
                 }
                 ?>
                 <td align="center"><?php echo $prvl->ps_discountamnt * $prvl->ps_qty; ?></td>
