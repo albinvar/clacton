@@ -115,7 +115,7 @@ if($newprint == 1)
     <table width="100%" style="margin-top: 5px;">
         <tr>
             <td>Invoice No: <?= $purchasedet->pm_invoiceno ?></td>
-            <td>Vehicle No: <?= $purchasedet->pm_vehicleno ?></td>
+            <!-- <td>Vehicle No: <?= $purchasedet->pm_vehicleno ?></td> -->
 
             <td>Expected Delivery: <?= date('d-M-Y', strtotime($purchasedet->pm_expecteddelivery)) ?></td>
         </tr>

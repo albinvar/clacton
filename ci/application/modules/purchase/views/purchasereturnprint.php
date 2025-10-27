@@ -126,7 +126,7 @@ if($newprint == 1)
     <table width="100%" style="margin-top: 5px;">
         <tr>
             <td width="50%">Invoice No: <?= $purchasedet->pm_invoiceno ?></td>
-            <td>Vehicle No: <?= $purchasedet->pm_vehicleno ?></td>
+            <!-- <td>Vehicle No: <?= $purchasedet->pm_vehicleno ?></td> -->
         </tr>
     </table>
     
@@ -215,8 +215,12 @@ if($newprint == 1)
     </thead>
     <?php
     $kn=1;
+    $totaltax = 0;
+    $totalcgst = 0;
+    $totalsgst = 0;
     if (!empty($purchaseprodcts)) {
         foreach ($purchaseprodcts as $prvl) {
+            $totaltax += $prvl->ps_totalgst;
             ?>
             <tr>
                 <td align="center"><?= $kn ?></td>
@@ -237,6 +241,8 @@ if($newprint == 1)
                     if(($purchasedet->sp_state == $businessdet[0]->bu_state || $purchasedet->sp_state == '') || $businessdet[0]->bu_country != '101')
                     {
                         $colspnno = '9';
+                        $totalcgst += $prvl->ps_totalgst/2;
+                        $totalsgst += $prvl->ps_totalgst/2;
                 ?>
                 <td align="center"><?php echo $prvl->ps_gstpercent/2 ?></td>
                 <td align="center"><?php echo $prvl->ps_totalgst/2 ?></td>
@@ -261,7 +267,33 @@ if($newprint == 1)
 }
 ?>
     <tr>
-        <td colspan="<?= $colspnno ?>" align="right">Total</td>
+        <td colspan="4" align="right"><b>Total</b></td>
+        <?php
+        if($this->isvatgst == 1) {
+            // VAT Business
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+        } else {
+            // GST Business
+            if(($purchasedet->sp_state == $businessdet[0]->bu_state || $purchasedet->sp_state == '') || $businessdet[0]->bu_country != '101')
+            {
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalcgst, 2) ?></b></td>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totalsgst, 2) ?></b></td>
+        <?php
+            }else{
+        ?>
+        <td align="center"></td>
+        <td align="center"><b><?php echo number_format($totaltax, 2) ?></b></td>
+        <?php
+            }
+        }
+        ?>
+        <td align="center"></td>
         <th><?= $purchasedet->pm_totalamount ?></th>
     </tr>
     <tr>
