@@ -229,7 +229,7 @@
                                             <a href="<?= base_url() ?>accounts/accountgroups">Account Group</a>
                                         </li>
                                         <li><a href="<?= base_url() ?>accounts/accountledger">Ledgers</a></li>
-                                        <!--<li><a href="<?= base_url() ?>accounts/accountjournals">Journal</a></li>-->
+                                        <li><a href="<?= base_url() ?>accounts/accountjournals">Journal</a></li>
                                         <li>
                                             <a href="#sidebarMultilevel2" data-bs-toggle="collapse">
                                                 Vouchers <span class="menu-arrow"></span>
@@ -254,13 +254,13 @@
                                                 </ul>
                                             </div>
                                         </li>
-                                        <!--<li><a href="<?= base_url() ?>accounts/trialbalance">Trial Balance</a></li>-->
+                                        <li><a href="<?= base_url() ?>accounts/trialbalance">Trial Balance</a></li>
                                         <li><a href="<?= base_url() ?>accounts/daybook">Day Book</a></li>
-                                        <!--<li><a href="<?= base_url() ?>accounts/profitandlossaccount">Profit & Loss Account</a></li>
+                                        <li><a href="<?= base_url() ?>accounts/profitandlossaccount">Profit & Loss Account</a></li>
                                         <li><a href="<?= base_url() ?>accounts/balancesheet">Balance Sheet</a></li>
 
                                         <li><a href="<?= base_url() ?>accounts/ledgerflowstatement/4">Cash Flow Statement</a></li>
-                                        <li><a href="<?= base_url() ?>accounts/ledgerflowstatement/3">Bank Flow Statement</a></li>-->
+                                        <li><a href="<?= base_url() ?>accounts/ledgerflowstatement/3">Bank Flow Statement</a></li>
 
                                         <li><a href="<?= base_url() ?>accounts/accountsettings">Account Settings</a></li>
                                     </ul>
