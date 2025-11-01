@@ -427,6 +427,8 @@ for($n=0; $n<=$emptycell; $n++)
             Acc No: <b><?= $businessdet->bu_accountnumber ?></b><br/>
             <?php if($this->isvatgst == 0) { ?>
             IFSC: <b><?= $businessdet->bu_ifsccode ?></b><br/>
+            <?php } else { ?>
+            Sort Code: <b><?= $businessdet->bu_ifsccode ?></b><br/>
             <?php } ?>
             Branch: <b><?= $businessdet->bu_bankbranch ?></b>
         </td>
