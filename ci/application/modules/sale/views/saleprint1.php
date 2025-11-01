@@ -425,7 +425,9 @@ for($n=0; $n<=$emptycell; $n++)
             Company's Bank Details<br/>
             Bank: <b><?= $businessdet->bu_bankname ?></b><br/>
             Acc No: <b><?= $businessdet->bu_accountnumber ?></b><br/>
+            <?php if($this->isvatgst == 0) { ?>
             IFSC: <b><?= $businessdet->bu_ifsccode ?></b><br/>
+            <?php } ?>
             Branch: <b><?= $businessdet->bu_bankbranch ?></b>
         </td>
         <td colspan="<?= $colspnno-4 ?>" align="right">Discount</td>
