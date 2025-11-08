@@ -503,6 +503,10 @@ class Purchase extends MY_Controller {
                         $expiry = date('Y-m-d', strtotime($expirydate[$k]));
                     }
 
+                    // Safety check for qty array
+                    if(!isset($qty[$k]) || $qty[$k] == '') {
+                        continue; // Skip this product if qty is missing
+                    }
                     $addedqty = $qty[$k];
 
                     if($type != 1)
@@ -579,9 +583,9 @@ class Purchase extends MY_Controller {
                         ]);
                     }
 
+                    $k++;
                 }
-                
-                $k++;
+
             }
 
             $insertdrg = $this->purslv->insert_batch($insert_batch_data);
@@ -919,6 +923,10 @@ class Purchase extends MY_Controller {
                         $expiry = date('Y-m-d', strtotime($expirydate[$k]));
                     }
 
+                    // Safety check for qty array
+                    if(!isset($qty[$k]) || $qty[$k] == '') {
+                        continue; // Skip this product if qty is missing
+                    }
                     $addedqty = $qty[$k];
 
                     $adprdctstck = $this->prdtmdl->reduceproductstock($prvl, $addedqty);
@@ -956,7 +964,7 @@ class Purchase extends MY_Controller {
                         'ps_israwmaterial' => $israwmaterial
                     );
 
-                    
+
                     // Update product purchase price
                     /*$updateprdctprice = $this->prdtmdl->update_status_by([
                         'pd_productid' => $prvl
@@ -965,9 +973,9 @@ class Purchase extends MY_Controller {
                         'pd_mrp' => $mrp[$k]
                     ]);*/
 
+                    $k++;
                 }
-                
-                $k++;
+
             }
 
             $insertdrg = $this->purslv->insert_batch($insert_batch_data);
