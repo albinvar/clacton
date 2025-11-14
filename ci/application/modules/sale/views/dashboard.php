@@ -1143,10 +1143,14 @@
             $("#balancestock"+no).html(blancestck);
             $("#balancestockval"+no).val(blancestck);
 
-            var gstmult = 100 + parseFloat(gst);
-            var gstamnt = (parseFloat(discountedprice)*parseFloat(gst)/100);
+            // Check if foreign currency - make it tax-free
+            var currentCurrency = $('#currency').val();
+            var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
 
-            if(cess != 0)
+            var gstmult = 100 + parseFloat(gst);
+            var gstamnt = isForeignCurrency ? 0 : (parseFloat(discountedprice)*parseFloat(gst)/100);
+
+            if(cess != 0 && !isForeignCurrency)
             {
                 var cessmult = 100 + parseFloat(cess);
 
@@ -1154,7 +1158,7 @@
 
                 $('#itemcessval'+no).val(tofixed_amount(cessamnt));
                 $('#itemcessvalue'+no).html(tofixed_amount(cessamnt));
-                
+
             }else{
                 var cessamnt = 0;
                 $('#itemcessval'+no).val(0);
@@ -1400,10 +1404,27 @@
         var currency = $('#currency').val();
         fetchExchangeRate(currency);
 
-        // Recalculate totals when currency changes
-        // This will be called by the existing calculation functions
-        calculatetotal();
+        // Recalculate all items when currency changes
+        recalculateAllItems();
     }
+
+    function recalculateAllItems() {
+        // Loop through all product rows and recalculate
+        var maxItemNo = itemno || <?= $itno ?>;
+        for(var i = 1; i <= maxItemNo; i++) {
+            // Check if this row has a product
+            if($('#productid' + i).val()) {
+                calculateitemprice(i);
+            }
+        }
+    }
+
+    // Add event listener for conversion rate changes
+    $(document).ready(function() {
+        $('#conversionrate').on('change', function() {
+            recalculateAllItems();
+        });
+    });
 
     var sln = <?= $itno ?>;
     var itemno = <?= $itno ?>;
