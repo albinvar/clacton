@@ -916,7 +916,11 @@
                   $('#batchno'+no).val(result.pt_batchno);
                   $('#expirydate'+no).val(result.pt_expirydate);
 
-                  $("#gst"+no).val(result.tb_tax);
+                  // Check if foreign currency - if so, set GST to 0
+                  var currentCurrency = $('#currency').val();
+                  var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+                  $("#gst"+no).val(isForeignCurrency ? 0 : result.tb_tax);
+                  $("#gst"+no).data('original-tax', result.tb_tax); // Store original tax for when currency changes back
                  
                   if(result.pd_profittype == 1)
                   {
@@ -1147,6 +1151,19 @@
             var currentCurrency = $('#currency').val();
             var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
 
+            // Force GST to 0 for foreign currency
+            if(isForeignCurrency) {
+                console.log('Forcing GST to 0 for item', no, 'due to foreign currency');
+                gst = 0;
+                $('#gst'+no).val(0);
+                cess = 0;
+                $('#cess'+no).val(0);
+
+                // Also update the visual display immediately
+                $('#itemgstvalue'+no).html('0');
+                $('#itemcessvalue'+no).html('0');
+            }
+
             var gstmult = 100 + parseFloat(gst);
             var gstamnt = isForeignCurrency ? 0 : (parseFloat(discountedprice)*parseFloat(gst)/100);
 
@@ -1349,11 +1366,10 @@
               // Handle customer currency
               if(result.ct_currency && result.ct_currency != 'INR') {
                   $('#currency').val(result.ct_currency);
-                  fetchExchangeRate(result.ct_currency);
+                  handleCurrencyChange(); // This will fetch rate AND update all tax fields
               } else {
                   $('#currency').val('INR');
-                  $('#conversionrate').val(1.000000);
-                  $('#rateinfo').text('1 INR = 1 INR');
+                  handleCurrencyChange(); // This will reset taxes to normal
               }
 
               var paidamount = parseFloat($('#grandtotal').val()) + parseFloat(result.ct_balanceamount);
@@ -1402,21 +1418,66 @@
 
     function handleCurrencyChange() {
         var currency = $('#currency').val();
+        var isForeignCurrency = (currency && currency != 'INR');
+
+        console.log('Currency changed to:', currency, 'Is Foreign:', isForeignCurrency);
+
         fetchExchangeRate(currency);
 
-        // Recalculate all items when currency changes
+        // Update all GST fields based on currency
+        var maxItemNo = itemno || <?= $itno ?>;
+        console.log('Updating items from 1 to', maxItemNo);
+
+        for(var i = 1; i <= maxItemNo; i++) {
+            // Check if this row exists
+            if($('#gst' + i).length) {
+                if(isForeignCurrency) {
+                    // Store original tax value if not already stored
+                    if(!$('#gst' + i).data('original-tax')) {
+                        $('#gst' + i).data('original-tax', $('#gst' + i).val());
+                        console.log('Stored original tax for item', i, ':', $('#gst' + i).val());
+                    }
+                    // Set GST to 0 for foreign currency
+                    $('#gst' + i).val(0);
+                    $('#cess' + i).val(0);
+
+                    // Update visual displays to 0
+                    $('#itemgstvalue' + i).html('0');
+                    $('#itemcessvalue' + i).html('0');
+                    $('#gstamt' + i).html('0');
+                    $('#cessamt' + i).html('0');
+                    console.log('Set GST to 0 for item', i);
+                } else {
+                    // Restore original tax value for INR
+                    var originalTax = $('#gst' + i).data('original-tax');
+                    if(originalTax) {
+                        $('#gst' + i).val(originalTax);
+                        console.log('Restored original tax for item', i, ':', originalTax);
+                    }
+                }
+            }
+        }
+
+        // Recalculate all items after updating GST values
         recalculateAllItems();
     }
 
     function recalculateAllItems() {
         // Loop through all product rows and recalculate
         var maxItemNo = itemno || <?= $itno ?>;
+        console.log('Recalculating all items from 1 to', maxItemNo);
+
         for(var i = 1; i <= maxItemNo; i++) {
             // Check if this row has a product
-            if($('#productid' + i).val()) {
+            if($('#productid' + i).val() && $('#productid' + i).val() != '') {
+                console.log('Recalculating item', i, 'Product ID:', $('#productid' + i).val());
                 calculateitemprice(i);
             }
         }
+
+        // Also recalculate the total
+        calculatetotalamnt();
+        console.log('Total recalculation complete');
     }
 
     // Add event listener for conversion rate changes
