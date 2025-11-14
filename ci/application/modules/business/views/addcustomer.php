@@ -152,7 +152,27 @@
                                         <input type="text" class="form-control" value="<?=(isset($editdata)) ? $editdata->ct_gstin : ''?>" id="gstno" name="gstno" placeholder="<?= $this->isvatgstname ?>">
                                     </div>
                                 </div>
-                                <?php 
+
+                                <div class="col-md-6">
+                                    <div class="form-group ">
+                                        <label>Currency (For International Customers)</label>
+                                        <select class="form-control" name="currency" id="currency">
+                                            <?php
+                                            $this->load->helper('currency');
+                                            $currencies = get_currencies();
+                                            $selected_currency = isset($editdata) ? $editdata->ct_currency : 'INR';
+                                            foreach($currencies as $code => $curr) {
+                                                $selected = ($selected_currency == $code) ? 'selected' : '';
+                                                echo "<option value='{$code}' {$selected}>{$curr['symbol']} - {$curr['name']} ({$code})</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                        <small class="form-text text-muted">
+                                            Select INR for Indian customers. Foreign currencies will be tax-free in billing.
+                                        </small>
+                                    </div>
+                                </div>
+                                <?php
                                 $isledgerentry= 0;
                                 if(isset($custledgr))
                                 {

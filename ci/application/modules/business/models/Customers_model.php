@@ -7,7 +7,7 @@ class customers_model extends MY_Model {
     public $protected_attributes = array('ct_cstomerid');
     public $primary_key          = 'ct_cstomerid';
 
-    private $select_fields = 'ct_cstomerid, ct_name, ct_type, ct_address, ct_city, ct_country, ct_state, ct_phone, ct_mobile, ct_email, ct_gstin, ct_balanceamount, ct_updatedon, ct_isactive, b.name as countryname, c.name as statename';
+    private $select_fields = 'ct_cstomerid, ct_name, ct_type, ct_address, ct_city, ct_country, ct_state, ct_phone, ct_mobile, ct_email, ct_gstin, ct_currency, ct_balanceamount, ct_updatedon, ct_isactive, b.name as countryname, c.name as statename';
 
     public function getcustomerdetailsbyid($customerid)
     {

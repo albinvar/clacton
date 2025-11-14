@@ -101,8 +101,30 @@
                                     </div>
                                 </div>
                                 </div>
-                                
-                                <?php 
+
+                                <div class="col-md-3 mt-2">
+                                    <label>Currency</label>
+                                    <select class="w-100 inputfieldcss" name="currency" id="currency" onchange="handleCurrencyChange()">
+                                        <?php
+                                        $this->load->helper('currency');
+                                        $currencies = get_currencies();
+                                        $selected_currency = isset($editdata) && $editdata->rb_currency ? $editdata->rb_currency : 'INR';
+                                        foreach($currencies as $code => $curr) {
+                                            $selected = ($selected_currency == $code) ? 'selected' : '';
+                                            echo "<option value='{$code}' {$selected}>{$curr['symbol']} - {$code}</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                    <small class="text-muted">Foreign currency = Tax-free</small>
+                                </div>
+
+                                <div class="col-md-3 mt-2">
+                                    <label>Exchange Rate (to INR)</label>
+                                    <input type="number" step="0.000001" name="conversionrate" id="conversionrate" placeholder="1.000000" value="<?php if(isset($editdata) && $editdata->rb_conversionrate){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>" class="w-100 inputfieldcss">
+                                    <small class="text-muted" id="rateinfo">1 INR = 1 INR</small>
+                                </div>
+
+                                <?php
                                 if($hidevehiclenumber == 0)
                                 {
                                 ?>
@@ -110,7 +132,7 @@
                                     <label>Vehicle Number</label>
                                     <input type="text" name="vehicleno" placeholder="Vehicle Number" value="<?php if(isset($editdata)){ echo $editdata->rb_vehicleno; } ?>" class="w-100 inputfieldcss">
                                 </div>
-                                <?php 
+                                <?php
                                 }
                                 ?>
                                 <div class="col-md-3 mt-2">
@@ -1320,6 +1342,16 @@
               $("#stateid").val(result.ct_state);
               //$('#stateid').selectpicker();
 
+              // Handle customer currency
+              if(result.ct_currency && result.ct_currency != 'INR') {
+                  $('#currency').val(result.ct_currency);
+                  fetchExchangeRate(result.ct_currency);
+              } else {
+                  $('#currency').val('INR');
+                  $('#conversionrate').val(1.000000);
+                  $('#rateinfo').text('1 INR = 1 INR');
+              }
+
               var paidamount = parseFloat($('#grandtotal').val()) + parseFloat(result.ct_balanceamount);
               $('#paidamount').val(paidamount);
               $('#balanceamnt').val(0);
@@ -1333,6 +1365,44 @@
         .always(function() {
           console.log("complete");
         });
+    }
+
+    // Currency handling functions
+    function fetchExchangeRate(currency) {
+        if(currency == 'INR') {
+            $('#conversionrate').val(1.000000);
+            $('#rateinfo').text('1 INR = 1 INR');
+            return;
+        }
+
+        $.ajax({
+            url: "<?= base_url() ?>sale/getexchangerate",
+            type: 'POST',
+            dataType: 'JSON',
+            data: {currency: currency},
+            success: function(response) {
+                if(response.error) {
+                    alert('Exchange rate API is unavailable. Please enter the conversion rate manually.');
+                    $('#conversionrate').focus();
+                } else if(response.rate) {
+                    $('#conversionrate').val(response.rate);
+                    $('#rateinfo').text('1 ' + currency + ' = ' + response.rate.toFixed(6) + ' INR');
+                }
+            },
+            error: function() {
+                alert('Failed to fetch exchange rate. Please enter manually.');
+                $('#conversionrate').focus();
+            }
+        });
+    }
+
+    function handleCurrencyChange() {
+        var currency = $('#currency').val();
+        fetchExchangeRate(currency);
+
+        // Recalculate totals when currency changes
+        // This will be called by the existing calculation functions
+        calculatetotal();
     }
 
     var sln = <?= $itno ?>;

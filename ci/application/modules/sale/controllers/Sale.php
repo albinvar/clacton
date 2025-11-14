@@ -1122,6 +1122,19 @@ class Sale extends MY_Controller {
 
         $salenote = $this->input->post('salenote');
 
+        // Currency support
+        $currency = $this->input->post('currency');
+        $conversionrate = $this->input->post('conversionrate');
+        if(empty($currency)) {
+            $currency = 'INR';
+            $conversionrate = 1.000000;
+        }
+
+        // For foreign currency, make bill tax-free
+        if($currency != 'INR') {
+            $totalgstamount = 0;
+        }
+
         if($billid ==0 || $billid == "")
         {
             $editdet = 0;
@@ -1148,6 +1161,8 @@ class Sale extends MY_Controller {
                     'rb_salesperson' => $salesperson,
                     'rb_shippingaddress' => $shippingaddress,
                     'rb_state'      => $stateid,
+                    'rb_currency'   => $currency,
+                    'rb_conversionrate' => $conversionrate,
                     'rb_billtype'   => $billtype,
                     'rb_totalamount'=> $totalamount,
                     'rb_discount'   => $totaldiscount,
@@ -1199,6 +1214,8 @@ class Sale extends MY_Controller {
                 'rb_salesperson' => $salesperson,
                 'rb_shippingaddress' => $shippingaddress,
                 'rb_state'      => $stateid,
+                'rb_currency'   => $currency,
+                'rb_conversionrate' => $conversionrate,
                 'rb_billtype'   => $billtype,
                 'rb_totalamount'=> $totalamount,
                 'rb_discount'   => $totaldiscount,
@@ -2285,8 +2302,27 @@ class Sale extends MY_Controller {
         $this->load->model('business/customers_model', 'cstmr');
         $supid = $this->input->post('supid');
         $supdet = $this->cstmr->getcustomerdetailsbyid($supid);
-        
+
         $this->output->set_content_type('application/json')->set_output(json_encode($supdet));
+    }
+
+    public function getexchangerate()
+    {
+        $this->load->helper('currency');
+        $currency = $this->input->post('currency');
+
+        if(empty($currency) || $currency == 'INR') {
+            $rate = 1.000000;
+        } else {
+            $rate = get_exchange_rate($currency, 'INR');
+            if($rate === false) {
+                // API failed, return null so frontend knows to ask for manual entry
+                $this->output->set_content_type('application/json')->set_output(json_encode(['error' => 'API_UNAVAILABLE', 'rate' => null]));
+                return;
+            }
+        }
+
+        $this->output->set_content_type('application/json')->set_output(json_encode(['rate' => $rate]));
     }
 
     public function getsalefulldetails($type=0)
