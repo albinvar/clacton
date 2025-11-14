@@ -984,19 +984,31 @@
                     }
                   }
 
-                  if(result.pd_profittype == 3)
-                  {
+                  // Check if foreign currency FIRST before calculating taxes
+                  var currentCurrency = $('#currency').val();
+                  var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+
+                  if(isForeignCurrency) {
+                      console.log('Product selection: Foreign currency detected, no taxes for item', no);
+                      // For foreign currency, no tax calculations
+                      var retailgst = 0;
+                      var retailitemprice = retailpriceval;
+                      $("#cess"+no).val(0);
+                      $('#itemcessval'+no).val(0);
+                      $('#itemcessvalue'+no).html('0');
+                  } else if(result.pd_profittype == 3) {
+                      // Tax inclusive pricing (only for INR)
                       var retailitemprice = retailpriceval;
                       var gstmult = 100 + parseFloat(result.tb_tax);
                       var retailpriceval = parseFloat(retailitemprice) * 100/parseFloat(gstmult);
                       var retailgst = parseFloat(retailitemprice) - parseFloat(retailpriceval);
-
-                  }else{
+                  } else {
+                      // Tax exclusive pricing (only for INR)
                       var retailgst = (parseFloat(retailpriceval) * parseFloat(result.tb_tax)/100);
                       var retailitemprice = parseFloat(retailpriceval) + parseFloat(retailgst);
                   }
 
-                  var gstamnt = (parseFloat(result.pt_purchaseprice) * parseFloat(result.tb_tax)/100);
+                  var gstamnt = isForeignCurrency ? 0 : (parseFloat(result.pt_purchaseprice) * parseFloat(result.tb_tax)/100);
                   var purchaseval = parseFloat(result.pt_purchaseprice) + parseFloat(gstamnt);
 
                   $("#purchaseprice"+no).val(tofixed_amount(purchaseval));
@@ -1009,7 +1021,7 @@
                   }
 
                   $("#unitprice"+no).val(tofixed_amount(retailitemprice));
-                  
+
                   $("#qty"+no).val('1');
                   $("#discountper"+no).val('0');
                   $("#discountamnt"+no).val('0');
@@ -1017,9 +1029,11 @@
                   $('#itemgstval'+no).val(tofixed_amount(retailgst));
                   $('#itemgstvalue'+no).html(tofixed_amount(retailgst));
 
-                  $('#netprice'+no).val(tofixed_amount(retailpriceval));
-                  $('#itemnetprice'+no).val(tofixed_amount(retailpriceval));
-                  $("#discountedprice"+no).val(tofixed_amount(retailpriceval));
+                  // For foreign currency, use the full price without tax adjustments
+                  var netpriceValue = isForeignCurrency ? retailitemprice : retailpriceval;
+                  $('#netprice'+no).val(tofixed_amount(netpriceValue));
+                  $('#itemnetprice'+no).val(tofixed_amount(netpriceValue));
+                  $("#discountedprice"+no).val(tofixed_amount(netpriceValue));
 
                   $("#netamt"+no).html(tofixed_amount(retailpriceval));
                   $("#gstamt"+no).html(tofixed_amount(retailgst));
@@ -1070,11 +1084,22 @@
     {
         var unitprice = $('#unitprice'+no).val();
         var gst = $('#gst'+no).val();
-        //var discountamnt = $('#discountamnt'+no).val();
 
-        var gstmult = 100 + parseFloat(gst);
-        var retailpriceval = parseFloat(unitprice) * 100/parseFloat(gstmult);
-        var retailgst = parseFloat(unitprice) - parseFloat(retailpriceval);
+        // Check if foreign currency
+        var currentCurrency = $('#currency').val();
+        var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+
+        if(isForeignCurrency) {
+            // For foreign currency, no GST calculation
+            gst = 0;
+            var retailpriceval = parseFloat(unitprice);
+            var retailgst = 0;
+        } else {
+            // Normal GST calculation for INR
+            var gstmult = 100 + parseFloat(gst);
+            var retailpriceval = parseFloat(unitprice) * 100/parseFloat(gstmult);
+            var retailgst = parseFloat(unitprice) - parseFloat(retailpriceval);
+        }
 
         var discountper = $('#discountper'+no).val();
         var discountamnt = parseFloat(retailpriceval)*parseFloat(discountper)/100;
@@ -1429,37 +1454,51 @@
         console.log('Updating items from 1 to', maxItemNo);
 
         for(var i = 1; i <= maxItemNo; i++) {
-            // Check if this row exists
-            if($('#gst' + i).length) {
+            // Check if this row exists (check for product ID which is always present for valid rows)
+            if($('#productid' + i).length && $('#productid' + i).val()) {
                 if(isForeignCurrency) {
                     // Store original tax value if not already stored
-                    if(!$('#gst' + i).data('original-tax')) {
-                        $('#gst' + i).data('original-tax', $('#gst' + i).val());
-                        console.log('Stored original tax for item', i, ':', $('#gst' + i).val());
+                    var currentGst = $('#gst' + i).val();
+                    if(!$('#gst' + i).data('original-tax') && currentGst && currentGst != '0') {
+                        $('#gst' + i).data('original-tax', currentGst);
+                        console.log('Stored original tax for item', i, ':', currentGst);
                     }
-                    // Set GST to 0 for foreign currency
+
+                    // Set GST and CESS to 0 for foreign currency
                     $('#gst' + i).val(0);
                     $('#cess' + i).val(0);
+                    $('#itemcessval' + i).val(0);
+                    $('#itemgstval' + i).val(0);
 
-                    // Update visual displays to 0
-                    $('#itemgstvalue' + i).html('0');
+                    // Force update ALL visual displays to 0
+                    $('#itemgstvalue' + i).html('0.00');
                     $('#itemcessvalue' + i).html('0');
-                    $('#gstamt' + i).html('0');
+                    $('#gstamt' + i).html('0.00');
                     $('#cessamt' + i).html('0');
-                    console.log('Set GST to 0 for item', i);
+                    $('#itemgstamt' + i).val(0);
+                    $('#itemcessamt' + i).val(0);
+
+                    console.log('Forced all tax displays to 0 for item', i);
                 } else {
                     // Restore original tax value for INR
                     var originalTax = $('#gst' + i).data('original-tax');
-                    if(originalTax) {
+                    if(originalTax && originalTax != '0') {
                         $('#gst' + i).val(originalTax);
                         console.log('Restored original tax for item', i, ':', originalTax);
                     }
+                    // CESS will be recalculated in calculateitemprice
                 }
             }
         }
 
         // Recalculate all items after updating GST values
         recalculateAllItems();
+
+        // Force update the total GST amount display
+        if(isForeignCurrency) {
+            $('#totalgstamount').val(0);
+            console.log('Set total GST amount to 0 for foreign currency');
+        }
     }
 
     function recalculateAllItems() {
@@ -1480,11 +1519,49 @@
         console.log('Total recalculation complete');
     }
 
-    // Add event listener for conversion rate changes
+    // Add event listener for conversion rate changes and initial setup
     $(document).ready(function() {
         $('#conversionrate').on('change', function() {
             recalculateAllItems();
         });
+
+        // Check initial currency state on page load
+        var initialCurrency = $('#currency').val();
+        if(initialCurrency && initialCurrency != 'INR') {
+            console.log('Page load: Foreign currency detected:', initialCurrency);
+            // Trigger currency change handling without fetching exchange rate (already loaded)
+            var isForeignCurrency = true;
+
+            // Update all existing items on page load
+            var maxItemNo = itemno || <?= $itno ?>;
+            for(var i = 1; i <= maxItemNo; i++) {
+                if($('#productid' + i).length && $('#productid' + i).val()) {
+                    // Store original tax if present
+                    var currentGst = $('#gst' + i).val();
+                    if(currentGst && currentGst != '0') {
+                        $('#gst' + i).data('original-tax', currentGst);
+                    }
+
+                    // Force all tax values and displays to 0
+                    $('#gst' + i).val(0);
+                    $('#cess' + i).val(0);
+                    $('#itemcessval' + i).val(0);
+                    $('#itemgstval' + i).val(0);
+                    $('#itemgstvalue' + i).html('0.00');
+                    $('#itemcessvalue' + i).html('0');
+                    $('#gstamt' + i).html('0.00');
+                    $('#cessamt' + i).html('0');
+                    $('#itemgstamt' + i).val(0);
+                    $('#itemcessamt' + i).val(0);
+
+                    console.log('Page load: Set all taxes to 0 for item', i);
+                }
+            }
+
+            // Recalculate all totals
+            recalculateAllItems();
+            $('#totalgstamount').val(0);
+        }
     });
 
     var sln = <?= $itno ?>;
