@@ -1011,16 +1011,35 @@
                   var gstamnt = isForeignCurrency ? 0 : (parseFloat(result.pt_purchaseprice) * parseFloat(result.tb_tax)/100);
                   var purchaseval = parseFloat(result.pt_purchaseprice) + parseFloat(gstamnt);
 
+                  // Convert purchase price and MRP
+                  if(isForeignCurrency) {
+                      purchaseval = parseFloat(purchaseval) * parseFloat(conversionRate);
+                  }
                   $("#purchaseprice"+no).val(tofixed_amount(purchaseval));
 
-                  if(result.pt_mrp != "" && result.pt_mrp != null && result.pt_mrp != 0)
-                  {
-                    $("#mrp"+no).val(result.pt_mrp);
-                  }else{
-                    $("#mrp"+no).val(result.pd_mrp);
-                  }
+                  var originalMrp = (result.pt_mrp != "" && result.pt_mrp != null && result.pt_mrp != 0) ? result.pt_mrp : result.pd_mrp;
+                  $("#mrp"+no).data('original-inr-price', originalMrp);
 
-                  $("#unitprice"+no).val(tofixed_amount(retailitemprice));
+                  var mrpValue = originalMrp;
+                  if(isForeignCurrency && mrpValue) {
+                      mrpValue = parseFloat(mrpValue) * parseFloat(conversionRate);
+                  }
+                  $("#mrp"+no).val(tofixed_amount(mrpValue));
+
+                  // Apply currency conversion to the initial price
+                  var currentCurrency = $('#currency').val();
+                  var conversionRate = parseFloat($('#conversionrate').val()) || 1;
+                  if(isForeignCurrency) {
+                      // Store original INR price
+                      $("#unitprice"+no).data('original-inr-price', retailitemprice);
+                      // Convert to foreign currency
+                      var convertedPrice = parseFloat(retailitemprice) * parseFloat(conversionRate);
+                      $("#unitprice"+no).val(tofixed_amount(convertedPrice));
+                      console.log('Initial product selection: Converting', retailitemprice, 'INR to', convertedPrice, currentCurrency);
+                  } else {
+                      $("#unitprice"+no).val(tofixed_amount(retailitemprice));
+                      $("#unitprice"+no).data('original-inr-price', retailitemprice);
+                  }
 
                   $("#qty"+no).val('1');
                   $("#discountper"+no).val('0');
@@ -1029,15 +1048,22 @@
                   $('#itemgstval'+no).val(tofixed_amount(retailgst));
                   $('#itemgstvalue'+no).html(tofixed_amount(retailgst));
 
-                  // For foreign currency, use the full price without tax adjustments
-                  var netpriceValue = isForeignCurrency ? retailitemprice : retailpriceval;
-                  $('#netprice'+no).val(tofixed_amount(netpriceValue));
-                  $('#itemnetprice'+no).val(tofixed_amount(netpriceValue));
-                  $("#discountedprice"+no).val(tofixed_amount(netpriceValue));
+                  // Apply currency conversion to net price and displays
+                  var convertedNetPrice = retailpriceval;
+                  var convertedTotalPrice = retailitemprice;
 
-                  $("#netamt"+no).html(tofixed_amount(retailpriceval));
-                  $("#gstamt"+no).html(tofixed_amount(retailgst));
-                  $("#totalamt"+no).html(tofixed_amount(retailitemprice));
+                  if(isForeignCurrency) {
+                      convertedNetPrice = parseFloat(retailpriceval) * parseFloat(conversionRate);
+                      convertedTotalPrice = convertedNetPrice; // No tax for foreign currency
+                  }
+
+                  $('#netprice'+no).val(tofixed_amount(convertedNetPrice));
+                  $('#itemnetprice'+no).val(tofixed_amount(convertedNetPrice));
+                  $("#discountedprice"+no).val(tofixed_amount(convertedNetPrice));
+
+                  $("#netamt"+no).html(tofixed_amount(convertedNetPrice));
+                  $("#gstamt"+no).html(isForeignCurrency ? '0.00' : tofixed_amount(retailgst));
+                  $("#totalamt"+no).html(tofixed_amount(convertedTotalPrice));
 
                   $("#itemnetamt"+no).val(tofixed_amount(retailpriceval));
                   $("#itemgstamt"+no).val(tofixed_amount(retailgst));
@@ -1135,18 +1161,83 @@
         var unitprice = $('#unitprice'+no).val();
         var gst = $('#gst'+no).val();
 
-        
-        //var retailgst = parseFloat(retailitemprice) - parseFloat(retailpriceval);
+        // Store original INR prices if not already stored
+        if(!$('#unitprice'+no).data('original-inr-price')) {
+            $('#unitprice'+no).data('original-inr-price', unitprice);
+        }
+        var mrp = $('#mrp'+no).val();
+        if(!$('#mrp'+no).data('original-inr-price') && mrp) {
+            $('#mrp'+no).data('original-inr-price', mrp);
+        }
 
-        var netprice = $('#netprice'+no).val();
-        var discountedprice = $('#discountedprice'+no).val();
-       
+        // Get exchange rate and currency
+        var currentCurrency = $('#currency').val();
+        var conversionRate = parseFloat($('#conversionrate').val()) || 1;
+        var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+
+        // Convert prices based on currency
+        if(isForeignCurrency) {
+            // Get original INR price and convert to foreign currency
+            var originalINRPrice = $('#unitprice'+no).data('original-inr-price') || unitprice;
+            unitprice = parseFloat(originalINRPrice) * parseFloat(conversionRate);
+            $('#unitprice'+no).val(tofixed_amount(unitprice));
+            console.log('Converted price for item', no, ':', originalINRPrice, 'INR to', unitprice, currentCurrency, 'Rate:', conversionRate);
+
+            // Also convert MRP
+            var originalMRP = $('#mrp'+no).data('original-inr-price');
+            if(originalMRP) {
+                var convertedMRP = parseFloat(originalMRP) * parseFloat(conversionRate);
+                $('#mrp'+no).val(tofixed_amount(convertedMRP));
+            }
+        } else {
+            // Restore original INR prices
+            var originalINRPrice = $('#unitprice'+no).data('original-inr-price');
+            if(originalINRPrice) {
+                unitprice = originalINRPrice;
+                $('#unitprice'+no).val(tofixed_amount(unitprice));
+            }
+
+            // Restore original MRP
+            var originalMRP = $('#mrp'+no).data('original-inr-price');
+            if(originalMRP) {
+                $('#mrp'+no).val(tofixed_amount(originalMRP));
+            }
+        }
+
+        // Recalculate net price based on converted unit price
+        if(isForeignCurrency) {
+            // For foreign currency, net price = unit price (no tax)
+            netprice = unitprice;
+            $('#netprice'+no).val(tofixed_amount(netprice));
+
+            // Recalculate discount amount if percentage exists
+            var discountper = $('#discountper'+no).val() || 0;
+            discountamnt = parseFloat(netprice) * parseFloat(discountper) / 100;
+            $('#discountamnt'+no).val(tofixed_amount(discountamnt));
+
+            discountedprice = parseFloat(netprice) - parseFloat(discountamnt);
+            $('#discountedprice'+no).val(tofixed_amount(discountedprice));
+            $('#itemnetprice'+no).val(tofixed_amount(netprice));
+        } else {
+            // For INR, calculate with tax
+            var gstmult = 100 + parseFloat(gst);
+            netprice = parseFloat(unitprice) * 100 / parseFloat(gstmult);
+            $('#netprice'+no).val(tofixed_amount(netprice));
+
+            // Recalculate discount
+            var discountper = $('#discountper'+no).val() || 0;
+            discountamnt = parseFloat(netprice) * parseFloat(discountper) / 100;
+            $('#discountamnt'+no).val(tofixed_amount(discountamnt));
+
+            discountedprice = parseFloat(netprice) - parseFloat(discountamnt);
+            $('#discountedprice'+no).val(tofixed_amount(discountedprice));
+            $('#itemnetprice'+no).val(tofixed_amount(netprice));
+        }
+
         var purchaseprice = $('#purchaseprice'+no).val();
 
-        
         var cess = $('#cess'+no).val();
         var qty = $('#qty'+no).val();
-        var discountamnt = $('#discountamnt'+no).val();
 
         var availstock = $("#availablestck"+no).val();
 
