@@ -1178,19 +1178,25 @@
 
             // Force GST to 0 for foreign currency
             if(isForeignCurrency) {
-                console.log('Forcing GST to 0 for item', no, 'due to foreign currency');
+                console.log('REAL-TIME: Forcing GST to 0 for item', no);
                 gst = 0;
                 $('#gst'+no).val(0);
                 cess = 0;
                 $('#cess'+no).val(0);
 
-                // Also update the visual display immediately
-                $('#itemgstvalue'+no).html('0');
-                $('#itemcessvalue'+no).html('0');
+                // IMMEDIATELY update ALL tax displays to 0
+                $('#itemgstvalue'+no).html('0.00');
+                $('#itemcessvalue'+no).html('0.00');
+                $('#itemgstval'+no).val(0);
+                $('#itemcessval'+no).val(0);
             }
 
             var gstmult = 100 + parseFloat(gst);
-            var gstamnt = isForeignCurrency ? 0 : (parseFloat(discountedprice)*parseFloat(gst)/100);
+            var gstamnt = 0; // Start with 0
+
+            if(!isForeignCurrency && gst > 0) {
+                gstamnt = (parseFloat(discountedprice)*parseFloat(gst)/100);
+            }
 
             if(cess != 0 && !isForeignCurrency)
             {
@@ -1208,30 +1214,51 @@
             }
             
             
-            var netamount = parseFloat(unitprice) - parseFloat(gstamnt) - parseFloat(cessamnt) - parseFloat(discountamnt);
+            // For foreign currency, net price is just discounted price (no tax adjustment)
+            var netamount = isForeignCurrency ? parseFloat(discountedprice) :
+                           (parseFloat(unitprice) - parseFloat(gstamnt) - parseFloat(cessamnt) - parseFloat(discountamnt));
+
             $('#netprice'+no).val(discountedprice);
-            $('#itemgstvalue'+no).html(tofixed_amount(gstamnt));
-            $('#itemgstval'+no).val(tofixed_amount(gstamnt));
+
+            // FORCE update GST displays based on currency
+            if(isForeignCurrency) {
+                $('#itemgstvalue'+no).html('0.00');
+                $('#itemgstval'+no).val(0);
+                gstamnt = 0; // Ensure it's 0 for calculations
+            } else {
+                $('#itemgstvalue'+no).html(tofixed_amount(gstamnt));
+                $('#itemgstval'+no).val(tofixed_amount(gstamnt));
+            }
 
             totalnetamount = parseFloat(discountedprice) * parseFloat(qty);
 
-            totaltaxamnt = parseFloat(gstamnt) * parseFloat(qty);
+            totaltaxamnt = isForeignCurrency ? 0 : (parseFloat(gstamnt) * parseFloat(qty));
 
-            totalcessamnt = parseFloat(cessamnt) * parseFloat(qty);
-            
+            totalcessamnt = isForeignCurrency ? 0 : (parseFloat(cessamnt) * parseFloat(qty));
+
             totaldiscountamnt = parseFloat(discountamnt) * parseFloat(qty);
 
             totalitemamount = parseFloat(discountedprice) * parseFloat(qty);
-            totallastamount = parseFloat(totalitemamount) + parseFloat(totaltaxamnt) + parseFloat(totalcessamnt);
+
+            // For foreign currency, total is just item amount (no taxes)
+            totallastamount = isForeignCurrency ? totalitemamount :
+                             (parseFloat(totalitemamount) + parseFloat(totaltaxamnt) + parseFloat(totalcessamnt));
 
             $('#itemnetamt'+no).val(tofixed_amount(totalnetamount));
             $('#netamt'+no).html(tofixed_amount(totalnetamount));
 
-            $('#itemgstamt'+no).val(tofixed_amount(totaltaxamnt));
-            $('#gstamt'+no).html(tofixed_amount(totaltaxamnt));
-
-            $('#itemcessamt'+no).val(tofixed_amount(totalcessamnt));
-            $('#cessamt'+no).html(tofixed_amount(totalcessamnt));
+            // FORCE tax display updates based on currency
+            if(isForeignCurrency) {
+                $('#itemgstamt'+no).val(0);
+                $('#gstamt'+no).html('0.00');
+                $('#itemcessamt'+no).val(0);
+                $('#cessamt'+no).html('0.00');
+            } else {
+                $('#itemgstamt'+no).val(tofixed_amount(totaltaxamnt));
+                $('#gstamt'+no).html(tofixed_amount(totaltaxamnt));
+                $('#itemcessamt'+no).val(tofixed_amount(totalcessamnt));
+                $('#cessamt'+no).html(tofixed_amount(totalcessamnt));
+            }
 
             $('#itemdiscountamt'+no).val(tofixed_amount(totaldiscountamnt));
             $('#discountamt'+no).html(tofixed_amount(totaldiscountamnt));
@@ -1445,59 +1472,64 @@
         var currency = $('#currency').val();
         var isForeignCurrency = (currency && currency != 'INR');
 
-        console.log('Currency changed to:', currency, 'Is Foreign:', isForeignCurrency);
+        console.log('REAL-TIME Currency change to:', currency, 'Is Foreign:', isForeignCurrency);
 
+        // Fetch exchange rate
         fetchExchangeRate(currency);
 
-        // Update all GST fields based on currency
-        var maxItemNo = itemno || <?= $itno ?>;
-        console.log('Updating items from 1 to', maxItemNo);
+        // Get the actual maximum item number by checking what rows exist
+        var actualMaxItem = 0;
+        for(var x = 1; x <= 100; x++) {
+            if($('#productid' + x).length && $('#productid' + x).val() && $('#productid' + x).val() != '') {
+                actualMaxItem = x;
+            }
+        }
 
-        for(var i = 1; i <= maxItemNo; i++) {
-            // Check if this row exists (check for product ID which is always present for valid rows)
-            if($('#productid' + i).length && $('#productid' + i).val()) {
+        console.log('Found', actualMaxItem, 'active product rows to update');
+
+        // IMMEDIATELY update all rows
+        for(var i = 1; i <= actualMaxItem; i++) {
+            if($('#productid' + i).length && $('#productid' + i).val() && $('#productid' + i).val() != '') {
+                console.log('Updating row', i, 'for currency', currency);
+
                 if(isForeignCurrency) {
-                    // Store original tax value if not already stored
+                    // Store original tax if not stored
                     var currentGst = $('#gst' + i).val();
                     if(!$('#gst' + i).data('original-tax') && currentGst && currentGst != '0') {
                         $('#gst' + i).data('original-tax', currentGst);
-                        console.log('Stored original tax for item', i, ':', currentGst);
                     }
 
-                    // Set GST and CESS to 0 for foreign currency
+                    // FORCE all tax values to 0 immediately
                     $('#gst' + i).val(0);
                     $('#cess' + i).val(0);
-                    $('#itemcessval' + i).val(0);
-                    $('#itemgstval' + i).val(0);
 
-                    // Force update ALL visual displays to 0
-                    $('#itemgstvalue' + i).html('0.00');
-                    $('#itemcessvalue' + i).html('0');
-                    $('#gstamt' + i).html('0.00');
-                    $('#cessamt' + i).html('0');
-                    $('#itemgstamt' + i).val(0);
-                    $('#itemcessamt' + i).val(0);
+                    // Recalculate this specific item to update all displays
+                    console.log('Recalculating item', i, 'for foreign currency');
+                    calculateitemprice(i);
 
-                    console.log('Forced all tax displays to 0 for item', i);
                 } else {
-                    // Restore original tax value for INR
+                    // Restore original tax for INR
                     var originalTax = $('#gst' + i).data('original-tax');
                     if(originalTax && originalTax != '0') {
                         $('#gst' + i).val(originalTax);
-                        console.log('Restored original tax for item', i, ':', originalTax);
                     }
-                    // CESS will be recalculated in calculateitemprice
+
+                    // Recalculate this specific item with restored tax
+                    console.log('Recalculating item', i, 'for INR with tax');
+                    calculateitemprice(i);
                 }
             }
         }
 
-        // Recalculate all items after updating GST values
-        recalculateAllItems();
+        // Final total calculation
+        calculatetotalamnt();
 
-        // Force update the total GST amount display
+        // Force total GST to 0 for foreign currency
         if(isForeignCurrency) {
             $('#totalgstamount').val(0);
-            console.log('Set total GST amount to 0 for foreign currency');
+            console.log('REAL-TIME update complete - all taxes removed');
+        } else {
+            console.log('REAL-TIME update complete - taxes restored');
         }
     }
 
@@ -1522,45 +1554,18 @@
     // Add event listener for conversion rate changes and initial setup
     $(document).ready(function() {
         $('#conversionrate').on('change', function() {
-            recalculateAllItems();
+            console.log('Exchange rate changed, recalculating...');
+            handleCurrencyChange(); // Use the same function for consistency
         });
 
         // Check initial currency state on page load
         var initialCurrency = $('#currency').val();
         if(initialCurrency && initialCurrency != 'INR') {
             console.log('Page load: Foreign currency detected:', initialCurrency);
-            // Trigger currency change handling without fetching exchange rate (already loaded)
-            var isForeignCurrency = true;
-
-            // Update all existing items on page load
-            var maxItemNo = itemno || <?= $itno ?>;
-            for(var i = 1; i <= maxItemNo; i++) {
-                if($('#productid' + i).length && $('#productid' + i).val()) {
-                    // Store original tax if present
-                    var currentGst = $('#gst' + i).val();
-                    if(currentGst && currentGst != '0') {
-                        $('#gst' + i).data('original-tax', currentGst);
-                    }
-
-                    // Force all tax values and displays to 0
-                    $('#gst' + i).val(0);
-                    $('#cess' + i).val(0);
-                    $('#itemcessval' + i).val(0);
-                    $('#itemgstval' + i).val(0);
-                    $('#itemgstvalue' + i).html('0.00');
-                    $('#itemcessvalue' + i).html('0');
-                    $('#gstamt' + i).html('0.00');
-                    $('#cessamt' + i).html('0');
-                    $('#itemgstamt' + i).val(0);
-                    $('#itemcessamt' + i).val(0);
-
-                    console.log('Page load: Set all taxes to 0 for item', i);
-                }
-            }
-
-            // Recalculate all totals
-            recalculateAllItems();
-            $('#totalgstamount').val(0);
+            // Trigger the currency change handler to update everything
+            setTimeout(function() {
+                handleCurrencyChange();
+            }, 100); // Small delay to ensure DOM is ready
         }
     });
 
