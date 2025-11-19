@@ -1011,9 +1011,9 @@
                   var gstamnt = isForeignCurrency ? 0 : (parseFloat(result.pt_purchaseprice) * parseFloat(result.tb_tax)/100);
                   var purchaseval = parseFloat(result.pt_purchaseprice) + parseFloat(gstamnt);
 
-                  // Convert purchase price and MRP
+                  // Convert purchase price and MRP - DIVIDE by exchange rate
                   if(isForeignCurrency) {
-                      purchaseval = parseFloat(purchaseval) * parseFloat(conversionRate);
+                      purchaseval = parseFloat(purchaseval) / parseFloat(conversionRate);
                   }
                   $("#purchaseprice"+no).val(tofixed_amount(purchaseval));
 
@@ -1022,7 +1022,7 @@
 
                   var mrpValue = originalMrp;
                   if(isForeignCurrency && mrpValue) {
-                      mrpValue = parseFloat(mrpValue) * parseFloat(conversionRate);
+                      mrpValue = parseFloat(mrpValue) / parseFloat(conversionRate);
                   }
                   $("#mrp"+no).val(tofixed_amount(mrpValue));
 
@@ -1032,10 +1032,10 @@
                   if(isForeignCurrency) {
                       // Store original INR price
                       $("#unitprice"+no).data('original-inr-price', retailitemprice);
-                      // Convert to foreign currency
-                      var convertedPrice = parseFloat(retailitemprice) * parseFloat(conversionRate);
+                      // Convert to foreign currency - DIVIDE by rate
+                      var convertedPrice = parseFloat(retailitemprice) / parseFloat(conversionRate);
                       $("#unitprice"+no).val(tofixed_amount(convertedPrice));
-                      console.log('Initial product selection: Converting', retailitemprice, 'INR to', convertedPrice, currentCurrency);
+                      console.log('Initial product selection: Converting', retailitemprice, 'INR to', convertedPrice, currentCurrency, 'Rate:', conversionRate);
                   } else {
                       $("#unitprice"+no).val(tofixed_amount(retailitemprice));
                       $("#unitprice"+no).data('original-inr-price', retailitemprice);
@@ -1048,12 +1048,12 @@
                   $('#itemgstval'+no).val(tofixed_amount(retailgst));
                   $('#itemgstvalue'+no).html(tofixed_amount(retailgst));
 
-                  // Apply currency conversion to net price and displays
+                  // Apply currency conversion to net price and displays - DIVIDE by rate
                   var convertedNetPrice = retailpriceval;
                   var convertedTotalPrice = retailitemprice;
 
                   if(isForeignCurrency) {
-                      convertedNetPrice = parseFloat(retailpriceval) * parseFloat(conversionRate);
+                      convertedNetPrice = parseFloat(retailpriceval) / parseFloat(conversionRate);
                       convertedTotalPrice = convertedNetPrice; // No tax for foreign currency
                   }
 
@@ -1111,9 +1111,21 @@
         var unitprice = $('#unitprice'+no).val();
         var gst = $('#gst'+no).val();
 
-        // Check if foreign currency
+        // Get current currency state
         var currentCurrency = $('#currency').val();
+        var conversionRate = parseFloat($('#conversionrate').val()) || 1;
         var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+
+        // Update stored original price (manual price change)
+        if(isForeignCurrency) {
+            // Convert back to INR for storage
+            var inrPrice = parseFloat(unitprice) * parseFloat(conversionRate);
+            $('#unitprice'+no).data('original-inr-price', inrPrice);
+            console.log('Manual price update - storing:', unitprice, currentCurrency, 'as', inrPrice, 'INR');
+        } else {
+            $('#unitprice'+no).data('original-inr-price', unitprice);
+            console.log('Manual price update - storing:', unitprice, 'INR');
+        }
 
         if(isForeignCurrency) {
             // For foreign currency, no GST calculation
@@ -1136,7 +1148,8 @@
 
         $('#itemnetprice'+no).val(tofixed_amount(retailpriceval));
 
-        calculateitemprice(no);
+        // Call calculateitemprice but skip price conversion since this is manual entry
+        calculateitemprice(no, true); // true = skip price conversion
     }
     function calculatediscount(no, type)
     {
@@ -1156,15 +1169,27 @@
         $('#discountedprice'+no).val(tofixed_amount(discountedprice));
         calculateitemprice(no);
     }
-    function calculateitemprice(no)
+    function calculateitemprice(no, skipPriceConversion)
     {
         var unitprice = $('#unitprice'+no).val();
         var gst = $('#gst'+no).val();
 
         // Store original INR prices if not already stored
         if(!$('#unitprice'+no).data('original-inr-price')) {
-            $('#unitprice'+no).data('original-inr-price', unitprice);
+            // If foreign currency is active, convert back to INR for storage
+            var currentCurrency = $('#currency').val();
+            var conversionRate = parseFloat($('#conversionrate').val()) || 1;
+            var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
+
+            if(isForeignCurrency) {
+                // Store the INR equivalent
+                var inrPrice = parseFloat(unitprice) * parseFloat(conversionRate);
+                $('#unitprice'+no).data('original-inr-price', inrPrice);
+            } else {
+                $('#unitprice'+no).data('original-inr-price', unitprice);
+            }
         }
+
         var mrp = $('#mrp'+no).val();
         if(!$('#mrp'+no).data('original-inr-price') && mrp) {
             $('#mrp'+no).data('original-inr-price', mrp);
@@ -1175,32 +1200,35 @@
         var conversionRate = parseFloat($('#conversionrate').val()) || 1;
         var isForeignCurrency = (currentCurrency && currentCurrency != 'INR');
 
-        // Convert prices based on currency
-        if(isForeignCurrency) {
-            // Get original INR price and convert to foreign currency
-            var originalINRPrice = $('#unitprice'+no).data('original-inr-price') || unitprice;
-            unitprice = parseFloat(originalINRPrice) * parseFloat(conversionRate);
-            $('#unitprice'+no).val(tofixed_amount(unitprice));
-            console.log('Converted price for item', no, ':', originalINRPrice, 'INR to', unitprice, currentCurrency, 'Rate:', conversionRate);
-
-            // Also convert MRP
-            var originalMRP = $('#mrp'+no).data('original-inr-price');
-            if(originalMRP) {
-                var convertedMRP = parseFloat(originalMRP) * parseFloat(conversionRate);
-                $('#mrp'+no).val(tofixed_amount(convertedMRP));
-            }
-        } else {
-            // Restore original INR prices
-            var originalINRPrice = $('#unitprice'+no).data('original-inr-price');
-            if(originalINRPrice) {
-                unitprice = originalINRPrice;
+        // Convert prices based on currency (unless skipPriceConversion is true)
+        if(!skipPriceConversion) {
+            if(isForeignCurrency) {
+                // Get original INR price and convert to foreign currency
+                // Exchange rate is INR per 1 foreign currency, so we DIVIDE
+                var originalINRPrice = $('#unitprice'+no).data('original-inr-price') || unitprice;
+                unitprice = parseFloat(originalINRPrice) / parseFloat(conversionRate);
                 $('#unitprice'+no).val(tofixed_amount(unitprice));
-            }
+                console.log('REAL-TIME: Converting item', no, 'price:', originalINRPrice, 'INR to', unitprice, currentCurrency, '(Rate: 1', currentCurrency, '=', conversionRate, 'INR)');
 
-            // Restore original MRP
-            var originalMRP = $('#mrp'+no).data('original-inr-price');
-            if(originalMRP) {
-                $('#mrp'+no).val(tofixed_amount(originalMRP));
+                // Also convert MRP - DIVIDE by rate
+                var originalMRP = $('#mrp'+no).data('original-inr-price');
+                if(originalMRP) {
+                    var convertedMRP = parseFloat(originalMRP) / parseFloat(conversionRate);
+                    $('#mrp'+no).val(tofixed_amount(convertedMRP));
+                }
+            } else {
+                // Restore original INR prices
+                var originalINRPrice = $('#unitprice'+no).data('original-inr-price');
+                if(originalINRPrice) {
+                    unitprice = originalINRPrice;
+                    $('#unitprice'+no).val(tofixed_amount(unitprice));
+                }
+
+                // Restore original MRP
+                var originalMRP = $('#mrp'+no).data('original-inr-price');
+                if(originalMRP) {
+                    $('#mrp'+no).val(tofixed_amount(originalMRP));
+                }
             }
         }
 
@@ -1356,6 +1384,9 @@
 
             $('#itemtotalamt'+no).val(tofixed_amount(totallastamount));
             $('#totalamt'+no).html(tofixed_amount(totallastamount));
+
+            // Debug log to verify updates
+            console.log('Item', no, 'updated - Unit Price:', $('#unitprice'+no).val(), 'Net:', totalnetamount, 'Tax:', totaltaxamnt, 'Total:', totallastamount);
 
             var purchaseval = parseFloat(purchaseprice) * parseFloat(qty);
 
