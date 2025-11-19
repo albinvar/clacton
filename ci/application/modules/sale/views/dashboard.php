@@ -819,8 +819,20 @@
 
     function tofixed_amount(amnt)
     {
+        // Handle null, undefined, NaN, or invalid values
+        if(amnt === null || amnt === undefined || isNaN(amnt) || amnt === '') {
+            return '';
+        }
+
         var decml = <?= $this->decimalpoints ?>;
-        return amnt.toFixed(decml);
+        var numValue = parseFloat(amnt);
+
+        // Check if parsed value is valid
+        if(isNaN(numValue)) {
+            return '';
+        }
+
+        return numValue.toFixed(decml);
     }
 
     function searchproductcodefun(val, no, entr=0)
@@ -1008,23 +1020,44 @@
                       var retailitemprice = parseFloat(retailpriceval) + parseFloat(retailgst);
                   }
 
-                  var gstamnt = isForeignCurrency ? 0 : (parseFloat(result.pt_purchaseprice) * parseFloat(result.tb_tax)/100);
-                  var purchaseval = parseFloat(result.pt_purchaseprice) + parseFloat(gstamnt);
+                  // Handle purchase price with null checks
+                  var purchasePrice = result.pt_purchaseprice || 0;
+                  var gstamnt = isForeignCurrency ? 0 : (parseFloat(purchasePrice) * parseFloat(result.tb_tax || 0)/100);
+                  var purchaseval = parseFloat(purchasePrice) + parseFloat(gstamnt);
 
                   // Convert purchase price and MRP - DIVIDE by exchange rate
-                  if(isForeignCurrency) {
+                  if(isForeignCurrency && purchaseval > 0) {
                       purchaseval = parseFloat(purchaseval) / parseFloat(conversionRate);
                   }
-                  $("#purchaseprice"+no).val(tofixed_amount(purchaseval));
 
-                  var originalMrp = (result.pt_mrp != "" && result.pt_mrp != null && result.pt_mrp != 0) ? result.pt_mrp : result.pd_mrp;
-                  $("#mrp"+no).data('original-inr-price', originalMrp);
-
-                  var mrpValue = originalMrp;
-                  if(isForeignCurrency && mrpValue) {
-                      mrpValue = parseFloat(mrpValue) / parseFloat(conversionRate);
+                  // Only set if valid number
+                  if(!isNaN(purchaseval) && purchaseval > 0) {
+                      $("#purchaseprice"+no).val(tofixed_amount(purchaseval));
+                  } else {
+                      $("#purchaseprice"+no).val('');
                   }
-                  $("#mrp"+no).val(tofixed_amount(mrpValue));
+
+                  var originalMrp = (result.pt_mrp != "" && result.pt_mrp != null && result.pt_mrp != 0) ? result.pt_mrp :
+                                   (result.pd_mrp != "" && result.pd_mrp != null && result.pd_mrp != 0) ? result.pd_mrp : null;
+
+                  // Only process MRP if it exists
+                  if(originalMrp && originalMrp > 0) {
+                      $("#mrp"+no).data('original-inr-price', originalMrp);
+
+                      var mrpValue = parseFloat(originalMrp);
+                      if(isForeignCurrency) {
+                          mrpValue = mrpValue / parseFloat(conversionRate);
+                      }
+
+                      if(!isNaN(mrpValue) && mrpValue > 0) {
+                          $("#mrp"+no).val(tofixed_amount(mrpValue));
+                      } else {
+                          $("#mrp"+no).val('');
+                      }
+                  } else {
+                      $("#mrp"+no).val('');
+                      $("#mrp"+no).data('original-inr-price', '');
+                  }
 
                   // Apply currency conversion to the initial price
                   var currentCurrency = $('#currency').val();
@@ -1212,9 +1245,11 @@
 
                 // Also convert MRP - DIVIDE by rate
                 var originalMRP = $('#mrp'+no).data('original-inr-price');
-                if(originalMRP) {
+                if(originalMRP && originalMRP > 0 && !isNaN(originalMRP)) {
                     var convertedMRP = parseFloat(originalMRP) / parseFloat(conversionRate);
-                    $('#mrp'+no).val(tofixed_amount(convertedMRP));
+                    if(!isNaN(convertedMRP) && convertedMRP > 0) {
+                        $('#mrp'+no).val(tofixed_amount(convertedMRP));
+                    }
                 }
             } else {
                 // Restore original INR prices
@@ -1262,7 +1297,7 @@
             $('#itemnetprice'+no).val(tofixed_amount(netprice));
         }
 
-        var purchaseprice = $('#purchaseprice'+no).val();
+        var purchaseprice = $('#purchaseprice'+no).val() || 0;
 
         var cess = $('#cess'+no).val();
         var qty = $('#qty'+no).val();
@@ -1388,10 +1423,17 @@
             // Debug log to verify updates
             console.log('Item', no, 'updated - Unit Price:', $('#unitprice'+no).val(), 'Net:', totalnetamount, 'Tax:', totaltaxamnt, 'Total:', totallastamount);
 
-            var purchaseval = parseFloat(purchaseprice) * parseFloat(qty);
+            var purchaseval = 0;
+            if(purchaseprice && !isNaN(purchaseprice) && purchaseprice > 0) {
+                purchaseval = parseFloat(purchaseprice) * parseFloat(qty);
+            }
 
             var itemprofit = parseFloat(totallastamount) - parseFloat(purchaseval);
-            $('#itemtotalprofit'+no).val(tofixed_amount(itemprofit));
+            if(!isNaN(itemprofit)) {
+                $('#itemtotalprofit'+no).val(tofixed_amount(itemprofit));
+            } else {
+                $('#itemtotalprofit'+no).val(0);
+            }
             
             calculatetotalamnt();
         }
