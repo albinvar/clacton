@@ -2150,7 +2150,7 @@ class Sale extends MY_Controller {
                             $btchdet.=' Expiry: '.date("d-M-Y", strtotime($row->pt_expirydate));
                         }
                     }
-                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.','.$no.')" class="searchdropdown">' . $row->pd_productcode  . '- '.$row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.') <br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
+                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.',\''.$no.'\')" class="searchdropdown">' . $row->pd_productcode  . '- '.$row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.') <br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
                 }
                 
             }
@@ -2200,7 +2200,7 @@ class Sale extends MY_Controller {
                     }
                     $prdid = $row->pd_productid;
                     $stckid = $row->pt_stockid;
-                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.','.$no.')" class="searchdropdown">' . $row->pd_productcode  . '- '.$row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.') <br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
+                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.',\''.$no.'\')" class="searchdropdown">' . $row->pd_productcode  . '- '.$row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.') <br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
                 }
                 
             }
@@ -2255,7 +2255,7 @@ class Sale extends MY_Controller {
                         }
                     }
 
-                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.', '.$no.')" class="searchdropdown">' . $prdctimage . $row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.')<br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
+                    echo '<a href="javascript:void(0)" onclick="selectproductdet('.$row->pd_productid.','.$row->pt_stockid.',\''.$no.'\')" class="searchdropdown">' . $prdctimage . $row->pd_productname.' '.$row->pd_size.' '.$row->pd_brand.' ('.$row->pc_categoryname.') (Avail Stock: '.$row->pt_stock.')<br/><span style="font-size:11px;">'.$btchdet.'</span></a>';
                 }
                 
             }
