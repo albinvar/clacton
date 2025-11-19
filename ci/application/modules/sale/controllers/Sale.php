@@ -2267,9 +2267,23 @@ class Sale extends MY_Controller {
     {
         $prodid = $this->input->post('prodid');
         $stockid = $this->input->post('stockid');
-        
+
+        // Backend logging
+        log_message('debug', '========== GET PRODUCT DETAILS ==========');
+        log_message('debug', 'Product ID: ' . $prodid);
+        log_message('debug', 'Stock ID: ' . $stockid);
+
         $proddet = $this->prdtmdl->getproductdetailstockbyid($prodid, $stockid);
-        
+
+        // Log the data being returned
+        log_message('debug', 'Product Details Retrieved:');
+        log_message('debug', 'Product Data: ' . print_r($proddet, true));
+        log_message('debug', 'Purchase Price: ' . (isset($proddet->pt_purchaseprice) ? $proddet->pt_purchaseprice : 'NULL'));
+        log_message('debug', 'MRP (pt): ' . (isset($proddet->pt_mrp) ? $proddet->pt_mrp : 'NULL'));
+        log_message('debug', 'MRP (pd): ' . (isset($proddet->pd_mrp) ? $proddet->pd_mrp : 'NULL'));
+        log_message('debug', 'Tax: ' . (isset($proddet->tb_tax) ? $proddet->tb_tax : 'NULL'));
+        log_message('debug', '========================================');
+
         $this->output->set_content_type('application/json')->set_output(json_encode($proddet));
     }
     public function searchcustomer()
