@@ -656,6 +656,17 @@
                                         <input type="hidden" name="previouspaidamnt" value="<?php if(isset($editdata)){ echo $editdata->rb_paidamount; }else{ echo 0; } ?>">
                                     </td>
                                 </tr>
+                                <tr id="convertedTotalRow" style="display: none;">
+                                    <td align="right"></td>
+                                    <td></td>
+                                    <td align="right"><span id="convertedTotalLabel">Converted Total:</span> </td>
+                                    <td>
+                                        <input type="number" step="any" readonly name="convertedgrandtotal" id="convertedgrandtotal" value="0" class="w-100 inputfieldcss">
+                                        <small class="form-text text-muted" id="convertedTotalCurrency"></small>
+                                    </td>
+                                    <td align="right"></td>
+                                    <td></td>
+                                </tr>
                                 <tr>
                                     <td align="right"></td>
                                     <td></td>
@@ -1357,6 +1368,9 @@
         $('#grandtotal').val(tofixed_amount(parseFloat(newgrandtotal)));
         $('#paidamount').val(tofixed_amount(paidamount));
         $('#balanceamnt').val(tofixed_amount(balanceamnt));
+
+        // Update converted grand total
+        updateConvertedGrandTotal();
     }
 
     function calculatepaidamount()
@@ -1626,6 +1640,7 @@
         // Recalculate all row converted amounts after rate is fetched
         setTimeout(function() {
             recalculateAllConvertedAmounts();
+            updateConvertedGrandTotal();
         }, 500);
     }
 
@@ -1635,6 +1650,43 @@
             $('#convertedAmountHeader').text('Amount in ' + currency);
         } else {
             $('#convertedAmountHeader').text('Converted Amount');
+        }
+    }
+
+    function updateConvertedGrandTotal() {
+        var currency = $('#currency').val();
+        var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
+        var grandTotal = parseFloat($('#grandtotal').val()) || 0;
+
+        if(currency && currency != 'INR' && grandTotal > 0) {
+            // Show the converted total row
+            $('#convertedTotalRow').show();
+
+            // Calculate converted total (non-rounded)
+            var convertedTotal = grandTotal / conversionRate;
+
+            // Update the field with full precision
+            $('#convertedgrandtotal').val(convertedTotal.toFixed(<?= $this->decimalpoints ?>));
+
+            // Update label and currency info
+            $('#convertedTotalLabel').text('Total in ' + currency + ':');
+
+            // Get currency symbol
+            <?php
+            $this->load->helper('currency');
+            $currencies = get_currencies();
+            ?>
+            var currencySymbols = <?= json_encode(array_column($currencies, 'symbol')) ?>;
+            var currencyCodes = <?= json_encode(array_keys($currencies)) ?>;
+            var symbolIndex = currencyCodes.indexOf(currency);
+            var symbol = symbolIndex >= 0 ? currencySymbols[symbolIndex] : currency;
+
+            $('#convertedTotalCurrency').text(symbol + ' ' + convertedTotal.toFixed(<?= $this->decimalpoints ?>));
+        } else {
+            // Hide the row if INR or no total
+            $('#convertedTotalRow').hide();
+            $('#convertedgrandtotal').val('0');
+            $('#convertedTotalCurrency').text('');
         }
     }
 
@@ -1651,6 +1703,7 @@
     function updateConversions() {
         console.log('Manual update triggered - Rate:', $('#conversionrate').val());
         recalculateAllConvertedAmounts();
+        updateConvertedGrandTotal();
 
         // Visual feedback
         var btn = event.target.closest('button');
@@ -1681,6 +1734,7 @@
         $('#conversionrate').on('blur', function() {
             console.log('Conversion rate field blur - Rate:', $(this).val());
             recalculateAllConvertedAmounts();
+            updateConvertedGrandTotal();
         });
 
         // Also allow Enter key to trigger update

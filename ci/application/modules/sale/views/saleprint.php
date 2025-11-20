@@ -256,6 +256,29 @@ if($newprint == 1)
         <td colspan="<?= $colspnno ?>" align="right">Balance Amount</td>
         <th><?= $purchasedet->rb_balanceamount ?></th>
     </tr>
+    <?php
+    // Display currency conversion information if not INR
+    if(isset($purchasedet->rb_currency) && $purchasedet->rb_currency && $purchasedet->rb_currency != 'INR') {
+        $this->load->helper('currency');
+        $currencies = get_currencies();
+        $currencyInfo = isset($currencies[$purchasedet->rb_currency]) ? $currencies[$purchasedet->rb_currency] : null;
+        $convertedTotal = $purchasedet->rb_grandtotal / $purchasedet->rb_conversionrate;
+        ?>
+        <tr>
+            <td colspan="<?= $colspnno ?>" align="right">Currency</td>
+            <th><?= $purchasedet->rb_currency ?><?php if($currencyInfo) echo ' (' . $currencyInfo['name'] . ')'; ?></th>
+        </tr>
+        <tr>
+            <td colspan="<?= $colspnno ?>" align="right">Conversion Rate</td>
+            <th>1 <?= $purchasedet->rb_currency ?> = <?= number_format($purchasedet->rb_conversionrate, 6) ?> INR</th>
+        </tr>
+        <tr>
+            <td colspan="<?= $colspnno ?>" align="right">Total in <?= $purchasedet->rb_currency ?></td>
+            <th><?php if($currencyInfo) echo $currencyInfo['symbol'] . ' '; ?><?= number_format($convertedTotal, $this->decimalpoints) ?></th>
+        </tr>
+    <?php
+    }
+    ?>
     <tr>
         <td colspan="10" align="right">Grand Total(in words): <b>Rs <?php echo convert_numbertowords($purchasedet->rb_grandtotal); ?> Only</b></td>
     </tr>
