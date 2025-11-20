@@ -503,7 +503,7 @@ class Purchase extends MY_Controller {
                         $expiry = date('Y-m-d', strtotime($expirydate[$k]));
                     }
 
-                    $addedqty = $qty[$k];
+                    $addedqty = isset($qty[$k]) ? $qty[$k] : 0;
 
                     if($type != 1)
                     {
@@ -919,7 +919,7 @@ class Purchase extends MY_Controller {
                         $expiry = date('Y-m-d', strtotime($expirydate[$k]));
                     }
 
-                    $addedqty = $qty[$k];
+                    $addedqty = isset($qty[$k]) ? $qty[$k] : 0;
 
                     $adprdctstck = $this->prdtmdl->reduceproductstock($prvl, $addedqty);
                     $prsstockdet = $this->prdstck->getproductstockdetails($this->buid, $prvl, $batch, $godownid);
