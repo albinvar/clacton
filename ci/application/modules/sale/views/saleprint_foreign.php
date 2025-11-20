@@ -23,17 +23,17 @@
   }
 
   .page-header {
-    height: 290px;
+    height: 265px;
     width: 98%;
     margin-left: 5px;
     margin-top: 5px;
   }
   .page-header-space{
-    height: 290px;
+    height: 265px;
   }
   .billitemstr{
     font-size: 13px;
-    min-height: 250px;
+    min-height: 30px;
   }
 
   .emtycellstyle{
@@ -208,13 +208,22 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
                 if($purchasedet->rb_existcustomer == 1)
                 {
                     $custdet = $this->cstmr->getcustomerdetailsbyid($purchasedet->rb_customerid);
+
+                    // Get customer country name
+                    $cust_country_name = '';
+                    if($custdet->ct_country) {
+                        $cust_country_data = $this->cuntry->get($custdet->ct_country);
+                        if($cust_country_data) {
+                            $cust_country_name = $cust_country_data->name;
+                        }
+                    }
                     ?>
                     <h4 style="margin: 0px;"> <?php
                     echo $custdet->ct_name;
                     ?></h4>
                     <?= $custdet->ct_address ?><br/>
-                    <?php if($custdet->ct_country): ?>
-                    Country: <?= $custdet->ct_country ?><br/>
+                    <?php if($cust_country_name): ?>
+                    Country: <?= $cust_country_name ?><br/>
                     <?php endif; ?>
                     Ph: <?= $custdet->ct_phone ?>
                     <?php
@@ -306,8 +315,9 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
         $kn++;
     }
 }
-$emptycell = 10-$kn;
-for($n=0; $n<=$emptycell; $n++)
+// Reduce empty rows to prevent page breaks - only add 2 empty rows max
+$emptycell = min(2, max(0, 5-$kn));
+for($n=0; $n<$emptycell; $n++)
 {
     ?>
     <tr>
