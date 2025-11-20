@@ -147,9 +147,9 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
             <td align="center"><u>
                 <?php
                 if($type == 2){
-                    echo "INTERNATIONAL PROFORMA INVOICE";
+                    echo "EXPORT/CUSTOMS PROFORMA INVOICE";
                 }else{
-                    echo "INTERNATIONAL INVOICE";
+                    echo "EXPORT/CUSTOMS INVOICE";
                 }
                 ?>
             </u></td>
@@ -172,15 +172,6 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
             <td align="right">DATE: <?php echo date('d/m/Y', strtotime($purchasedet->rb_date)) ?> <?php echo date('H:i', strtotime($purchasedet->rb_time)) ?></td>
         </tr>
     </table>
-
-    <!-- Currency Information Bar -->
-    <div class="currency-info">
-        Currency: <?= $currency_name ?> (<?= $currency_symbol ?>)
-        <?php if($country_name): ?>
-         | Country: <?= $country_name ?>
-        <?php endif; ?>
-         | Exchange Rate: 1 <?= $currency_code ?> = <?= number_format($conversion_rate, 6) ?> INR
-    </div>
 
     <table border="1" width="98%" style="border-collapse: collapse; margin-top: 5px;" cellpadding="5" cellspacing="0">
       <tbody>
@@ -274,6 +265,7 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
         <tr>
             <th class="wd-5p-f">Sl No</th>
             <th align="left">Item Name</th>
+            <th>HSN</th>
             <th>Unit Price<br/>(<?= $currency_symbol ?>)</th>
             <th>Qty</th>
             <th>Discount<br/>(<?= $currency_symbol ?>)</th>
@@ -300,6 +292,7 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
                 }
                 ?>
                 </td>
+                <td align="center"><?= $prvl->pd_hsnno ?></td>
                 <td align="center"><?= number_format($unit_price_converted, $this->decimalpoints) ?></td>
                 <td align="center"><?php echo $prvl->rbs_qty ?></td>
                 <td align="center"><?= number_format($discount_converted, $this->decimalpoints) ?></td>
@@ -321,6 +314,7 @@ for($n=0; $n<$emptycell; $n++)
         <td class="emtycellstyle"></td>
         <td class="emtycellstyle"></td>
         <td class="emtycellstyle"></td>
+        <td class="emtycellstyle"></td>
     </tr>
     <?php
 }
@@ -334,7 +328,7 @@ $paid_amount_converted = $purchasedet->rb_paidamount / $conversion_rate;
 $balance_amount_converted = $purchasedet->rb_balanceamount / $conversion_rate;
 ?>
     <tr>
-        <td colspan="5" align="right"><b>Total</b></td>
+        <td colspan="6" align="right"><b>Total</b></td>
         <th><?= $currency_symbol ?> <?= number_format($total_amount_converted, $this->decimalpoints) ?></th>
     </tr>
 
@@ -366,10 +360,10 @@ $balance_amount_converted = $purchasedet->rb_balanceamount / $conversion_rate;
         <th><?= $currency_symbol ?> <?= number_format($balance_amount_converted, $this->decimalpoints) ?></th>
     </tr>
     <tr>
-        <td colspan="6" align="right">Grand Total(in words): <b><?= $currency_symbol ?> <?php echo convert_numbertowords($grand_total_converted); ?> Only</b></td>
+        <td colspan="7" align="right">Grand Total(in words): <b><?= $currency_symbol ?> <?php echo convert_numbertowords(round($grand_total_converted)); ?> Only</b></td>
     </tr>
     <tr>
-        <td colspan="6" align="left">Payment Method: <b><?php
+        <td colspan="7" align="left">Payment Method: <b><?php
         switch($purchasedet->rb_paymentmethod)
         {
             case 4:
@@ -382,7 +376,7 @@ $balance_amount_converted = $purchasedet->rb_balanceamount / $conversion_rate;
         ?></b></td>
     </tr>
     <tr>
-        <td colspan="6" style="background-color: #fffacd; padding: 10px;">
+        <td colspan="7" style="background-color: #fffacd; padding: 10px;">
             <b>Exchange Rate Information:</b><br/>
             All amounts in this invoice are in <b><?= $currency_name ?> (<?= $currency_code ?>)</b>.<br/>
             Conversion Rate: 1 <?= $currency_code ?> = <?= number_format($conversion_rate, 6) ?> INR (Indian Rupees)<br/>
