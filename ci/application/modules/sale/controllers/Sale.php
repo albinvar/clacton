@@ -2014,9 +2014,16 @@ class Sale extends MY_Controller {
         $this->data['newprint'] = $newprint;
         $this->data['businessdet'] = $this->busunt->getprintbusinessunitdetails($this->buid);
 
-        $this->data['purchasedet'] = $this->retlmstr->getretailbilldetailsbyid($saleid);
+        $this->data['purchasedet'] = $purchasedet = $this->retlmstr->getretailbilldetailsbyid($saleid);
         $this->data['purchaseprodcts'] = $this->retlslv->getsaleproducts($saleid);
         $this->data['duptext'] = "";
+
+        // Check if this is a foreign currency bill (not INR)
+        $is_foreign_currency = false;
+        if(isset($purchasedet->rb_currency) && $purchasedet->rb_currency && $purchasedet->rb_currency != 'INR') {
+            $is_foreign_currency = true;
+        }
+
         /*if($type == 3)
         {
             $this->load->view('quotationprint', $this->data, FALSE);
@@ -2025,10 +2032,15 @@ class Sale extends MY_Controller {
         {
             $this->load->view('thermalprint', $this->data, FALSE);
         }else{
-            //$this->load->view('saleprint2', $this->data, FALSE);
-            $this->load->view('saleprint1', $this->data, FALSE);
+            // Route to foreign currency template if applicable
+            if($is_foreign_currency) {
+                $this->load->view('saleprint_foreign', $this->data, FALSE);
+            } else {
+                //$this->load->view('saleprint2', $this->data, FALSE);
+                $this->load->view('saleprint1', $this->data, FALSE);
+            }
         }
-        
+
         //}
         
     }
@@ -2071,9 +2083,15 @@ class Sale extends MY_Controller {
         $this->data['newprint'] = $newprint;
         $this->data['businessdet'] = $this->busunt->getprintbusinessunitdetails($this->buid);
 
-        $this->data['purchasedet'] = $this->retlmstr->getretailbilldetailsbyid($saleid);
+        $this->data['purchasedet'] = $purchasedet = $this->retlmstr->getretailbilldetailsbyid($saleid);
         $this->data['purchaseprodcts'] = $this->retlslv->getsaleproducts($saleid);
-        
+
+        // Check if this is a foreign currency bill (not INR)
+        $is_foreign_currency = false;
+        if(isset($purchasedet->rb_currency) && $purchasedet->rb_currency && $purchasedet->rb_currency != 'INR') {
+            $is_foreign_currency = true;
+        }
+
         /*if($type == 3)
         {
             $this->load->view('quotationprint', $this->data, FALSE);
@@ -2082,8 +2100,13 @@ class Sale extends MY_Controller {
         {
             $this->load->view('thermalprint', $this->data, FALSE);
         }else{
-            //$this->load->view('saleprint2', $this->data, FALSE);
-            $this->load->view('saleprint1', $this->data, FALSE);
+            // Route to foreign currency template if applicable
+            if($is_foreign_currency) {
+                $this->load->view('saleprint_foreign', $this->data, FALSE);
+            } else {
+                //$this->load->view('saleprint2', $this->data, FALSE);
+                $this->load->view('saleprint1', $this->data, FALSE);
+            }
         }
     }
     public function salereturnprint($saleid, $newprint=0, $type)
