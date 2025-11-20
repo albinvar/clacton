@@ -302,17 +302,64 @@ function calculateGrandTotal() {
 // CURRENCY CHANGE HANDLER
 // ============================================================================
 
+function fetchExchangeRate(currency) {
+    console.log('Fetching exchange rate for:', currency);
+
+    if (currency === 'INR' || currency === '') {
+        $('#conversionrate').val('1.000000');
+        $('#rateinfo').text('1 INR = 1 INR');
+        CurrencyState.update('INR', 1.0);
+        updateAllRows();
+        return;
+    }
+
+    // Show loading state
+    $('#rateinfo').html('<i class="fa fa-spinner fa-spin"></i> Fetching rate...');
+
+    $.ajax({
+        url: '<?= base_url() ?>sale/getexchangerate',
+        type: 'POST',
+        dataType: 'JSON',
+        data: { currency: currency },
+        success: function(response) {
+            console.log('Exchange rate response:', response);
+
+            if (response.error) {
+                $('#rateinfo').html('<span class="text-danger">API unavailable - Enter rate manually</span>');
+                $('#conversionrate').focus();
+                console.error('Exchange rate API error:', response.error);
+            } else if (response.rate) {
+                var rate = parseFloat(response.rate);
+                $('#conversionrate').val(rate.toFixed(6));
+                $('#rateinfo').html('1 ' + currency + ' = <strong>' + rate.toFixed(2) + '</strong> INR');
+
+                CurrencyState.update(currency, rate);
+                updateAllRows();
+            } else {
+                $('#rateinfo').html('<span class="text-danger">Invalid response from server</span>');
+                console.error('Unexpected response:', response);
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#rateinfo').html('<span class="text-danger">Error fetching rate</span>');
+            console.error('AJAX Error:', error);
+        }
+    });
+}
+
 function handleCurrencyChange() {
     console.log('\n========== CURRENCY CHANGE ==========');
 
     var newCurrency = $('#currency').val();
-    var newRate = parseFloat($('#conversionrate').val()) || 1.0;
 
-    console.log('Changing from', CurrencyState.current, 'to', newCurrency);
-    console.log('Rate:', newRate);
+    console.log('Currency changed to:', newCurrency);
 
-    // Update currency state
-    CurrencyState.update(newCurrency, newRate);
+    // Fetch new exchange rate
+    fetchExchangeRate(newCurrency);
+}
+
+function updateAllRows() {
+    console.log('Updating all rows for currency:', CurrencyState.current);
 
     // Update all existing rows
     for (var rowNo in ProductRows) {
@@ -321,7 +368,7 @@ function handleCurrencyChange() {
         }
     }
 
-    console.log('========== CURRENCY CHANGE COMPLETE ==========\n');
+    console.log('========== CURRENCY UPDATE COMPLETE ==========\n');
 }
 
 function updateRowForNewCurrency(rowNo) {
@@ -433,9 +480,14 @@ $(document).ready(function() {
         handleCurrencyChange();
     });
 
+    // Manual rate change (for testing/override)
     $('#conversionrate').on('change', function() {
-        CurrencyState.update($('#currency').val(), $(this).val());
-        handleCurrencyChange();
+        var currency = $('#currency').val();
+        var rate = parseFloat($(this).val()) || 1.0;
+
+        console.log('Manual rate change:', currency, rate);
+        CurrencyState.update(currency, rate);
+        updateAllRows();
     });
 
     console.log('Currency module ready');

@@ -1934,5 +1934,11 @@
         console.log("You pressed Enter..!!");
        }
     });*/
-    
+
+// ============================================================================
+// CLEAN CURRENCY BILLING MODULE - COMPLETE REBUILD
+// ============================================================================
+<?php include(APPPATH . 'modules/sale/views/billing_currency_module.js.php'); ?>
+// ============================================================================
+
 </script>
