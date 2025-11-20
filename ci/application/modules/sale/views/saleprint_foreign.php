@@ -360,7 +360,58 @@ $balance_amount_converted = $purchasedet->rb_balanceamount / $conversion_rate;
         <th><?= $currency_symbol ?> <?= number_format($balance_amount_converted, $this->decimalpoints) ?></th>
     </tr>
     <tr>
-        <td colspan="7" align="right">Grand Total(in words): <b><?= $currency_symbol ?> <?php echo convert_numbertowords(round($grand_total_converted)); ?> Only</b></td>
+        <td colspan="7" align="right">Grand Total(in words): <b><?php
+        // Convert foreign currency amount to words
+        $dollars = floor($grand_total_converted);
+        $cents = round(($grand_total_converted - $dollars) * 100);
+
+        $currency_unit = $currency_code; // e.g., "USD", "EUR"
+        $subunit = '';
+
+        // Map currency codes to their subunit names
+        switch($currency_code) {
+            case 'USD':
+            case 'CAD':
+            case 'AUD':
+            case 'SGD':
+            case 'HKD':
+                $currency_unit = 'Dollar';
+                $subunit = 'Cent';
+                break;
+            case 'EUR':
+                $currency_unit = 'Euro';
+                $subunit = 'Cent';
+                break;
+            case 'GBP':
+                $currency_unit = 'Pound';
+                $subunit = 'Pence';
+                break;
+            case 'JPY':
+                $currency_unit = 'Yen';
+                $subunit = 'Sen';
+                break;
+            case 'AED':
+                $currency_unit = 'Dirham';
+                $subunit = 'Fils';
+                break;
+            default:
+                $currency_unit = $currency_code;
+                $subunit = 'Cent';
+        }
+
+        // Build the words
+        $words = convert_numbertowords($dollars) . ' ' . $currency_unit;
+        $words .= ($dollars == 1 ? '' : 's'); // Pluralize main currency unit
+
+        if($cents > 0) {
+            $words .= ' and ' . convert_numbertowords($cents) . ' ' . $subunit;
+            $words .= ($cents == 1 ? '' : 's'); // Pluralize subunit
+        }
+
+        $words .= ' Only';
+
+        echo $currency_symbol . ' ' . $words;
+        ?></b></td>
     </tr>
     <tr>
         <td colspan="7" align="left">Payment Method: <b><?php
