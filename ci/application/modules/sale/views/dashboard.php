@@ -195,8 +195,31 @@
                                     </select>
                                 </div>
 
+                                <div class="col-md-3 mt-2">
+                                    <label>Currency</label>
+                                    <select class="w-100 inputfieldcss" name="currency" id="currency" onchange="handleCurrencyChange()">
+                                        <?php
+                                        $this->load->helper('currency');
+                                        $currencies = get_currencies();
+                                        $selected_currency = isset($editdata) && $editdata->rb_currency ? $editdata->rb_currency : 'INR';
+                                        foreach($currencies as $code => $curr) {
+                                            $selected = ($code == $selected_currency) ? 'selected' : '';
+                                            echo "<option value='{$code}' {$selected}>{$curr['name']} ({$curr['symbol']})</option>";
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 mt-2">
+                                    <label>Conversion Rate (to INR)</label>
+                                    <input type="number" step="0.000001" name="conversionrate" id="conversionrate"
+                                           value="<?php if(isset($editdata)){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>"
+                                           class="w-100 inputfieldcss" readonly style="background-color: #f0f0f0;">
+                                    <small class="form-text text-muted" id="rateinfo">1 INR = 1 INR</small>
+                                </div>
+
                                 <!------------- New fields added -------------->
-                                <?php 
+                                <?php
                                 if($hideewaybillno == 0)
                                 {
                                 ?>
@@ -1320,6 +1343,16 @@
               $("#stateid").val(result.ct_state);
               //$('#stateid').selectpicker();
 
+              // Handle customer currency
+              if(result.ct_currency && result.ct_currency != '') {
+                  $('#currency').val(result.ct_currency);
+                  fetchExchangeRate(result.ct_currency);
+              } else {
+                  $('#currency').val('INR');
+                  $('#conversionrate').val('1.000000');
+                  $('#rateinfo').text('1 INR = 1 INR');
+              }
+
               var paidamount = parseFloat($('#grandtotal').val()) + parseFloat(result.ct_balanceamount);
               $('#paidamount').val(paidamount);
               $('#balanceamnt').val(0);
@@ -1475,5 +1508,56 @@
         console.log("You pressed Enter..!!");
        }
     });*/
-    
+
+    // ============================================================================
+    // CURRENCY EXCHANGE RATE HANDLING
+    // ============================================================================
+
+    function fetchExchangeRate(currency) {
+        if(currency == 'INR' || currency == '') {
+            $('#conversionrate').val('1.000000');
+            $('#rateinfo').text('1 INR = 1 INR');
+            return;
+        }
+
+        // Show loading
+        $('#rateinfo').html('<i class="fa fa-spinner fa-spin"></i> Fetching rate...');
+
+        $.ajax({
+            url: "<?= base_url() ?>sale/getexchangerate",
+            type: 'POST',
+            dataType: 'JSON',
+            data: {currency: currency},
+            success: function(response) {
+                if(response.error) {
+                    $('#rateinfo').html('<span class="text-danger">API unavailable. Please enter rate manually.</span>');
+                    $('#conversionrate').prop('readonly', false).css('background-color', '#fff');
+                    $('#conversionrate').focus();
+                } else if(response.rate) {
+                    $('#conversionrate').val(parseFloat(response.rate).toFixed(6));
+                    $('#rateinfo').html('1 ' + currency + ' = <strong>' + parseFloat(response.rate).toFixed(4) + '</strong> INR');
+                    $('#conversionrate').prop('readonly', true).css('background-color', '#f0f0f0');
+                }
+            },
+            error: function() {
+                $('#rateinfo').html('<span class="text-danger">Failed to fetch rate. Please enter manually.</span>');
+                $('#conversionrate').prop('readonly', false).css('background-color', '#fff');
+                $('#conversionrate').focus();
+            }
+        });
+    }
+
+    function handleCurrencyChange() {
+        var currency = $('#currency').val();
+        fetchExchangeRate(currency);
+    }
+
+    // Initialize on page load
+    $(document).ready(function() {
+        var initialCurrency = $('#currency').val();
+        if(initialCurrency && initialCurrency != 'INR') {
+            fetchExchangeRate(initialCurrency);
+        }
+    });
+
 </script>
