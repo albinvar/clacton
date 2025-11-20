@@ -375,11 +375,19 @@ class products_model extends MY_Model {
     }
 
     public function addproductstock($prdctid, $qty){
+        // Validate qty to prevent SQL syntax errors
+        if(empty($qty) || !is_numeric($qty)) {
+            $qty = 0;
+        }
         $this->db->set('pd_stock', 'pd_stock+'.$qty, FALSE);
         $this->db->where('pd_productid', $prdctid);
         $this->db->update('ub_products');
     }
     public function reduceproductstock($prdctid, $qty){
+        // Validate qty to prevent SQL syntax errors
+        if(empty($qty) || !is_numeric($qty)) {
+            $qty = 0;
+        }
         $this->db->set('pd_stock', 'pd_stock-'.$qty, FALSE);
         $this->db->where('pd_productid', $prdctid);
         $this->db->update('ub_products');
