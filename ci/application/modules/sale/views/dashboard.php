@@ -1074,7 +1074,9 @@
                                       
                   //$("#qty"+no).focus();
 
-                  
+                  // Calculate converted amount for this newly added product
+                  calculateConvertedAmount(no);
+
                   calculatetotalamnt();
                   addmoreitem();
             })
@@ -1640,18 +1642,20 @@
         }
     }
 
-    // Also update conversion rate field onchange
-    $('#conversionrate').on('change keyup', function() {
-        recalculateAllConvertedAmounts();
-    });
-
     // Initialize on page load
     $(document).ready(function() {
         var initialCurrency = $('#currency').val();
         updateConvertedAmountHeader();
+
         if(initialCurrency && initialCurrency != 'INR') {
             fetchExchangeRate(initialCurrency);
         }
+
+        // Update all converted amounts when conversion rate is manually edited
+        $('#conversionrate').on('change keyup blur', function() {
+            console.log('Conversion rate changed to:', $(this).val());
+            recalculateAllConvertedAmounts();
+        });
     });
 
 </script>
