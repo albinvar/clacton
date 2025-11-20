@@ -44,14 +44,14 @@
 
   .logo-container {
     width: 20%;
-    max-width: 150px;
-    height: 80px;
+    max-width: 200px;
+    height: 120px;
     display: inline-block;
     vertical-align: top;
   }
   .logo-container img {
     max-width: 100%;
-    max-height: 80px;
+    max-height: 120px;
     width: auto;
     height: auto;
     object-fit: contain;
