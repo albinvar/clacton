@@ -1133,7 +1133,7 @@
         var currency = $('#currency').val();
         var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
 
-        // Use Net Amount (before tax) for conversion, not Total Amount
+        // Use Net Amount (before tax) for conversion
         var netAmount = parseFloat($('#itemnetamt' + rowNo).val()) || 0;
 
         if(netAmount == 0 || isNaN(netAmount)) {
@@ -1143,17 +1143,12 @@
             return;
         }
 
-        var convertedAmount = 0;
-
-        if(currency == 'INR' || currency == '') {
-            // Billing in INR: Show foreign currency equivalent (divide by rate)
-            // Example: ₹81.40 / 88.56 rate = $0.92 USD
-            convertedAmount = netAmount / conversionRate;
-        } else {
-            // Billing in foreign currency: Show INR equivalent (multiply by rate)
-            // Example: $1.00 * 88.56 rate = ₹88.56
-            convertedAmount = netAmount * conversionRate;
-        }
+        // ALWAYS divide by conversion rate
+        // Products are ALWAYS priced in INR
+        // Currency dropdown just selects which foreign currency to show
+        // Example: ₹374.00 / 88.56 (USD rate) = $4.22
+        // Example: ₹374.00 / 92.50 (EUR rate) = €4.04
+        var convertedAmount = netAmount / conversionRate;
 
         // Update the converted amount fields
         $('#convertedamount' + rowNo).val(convertedAmount.toFixed(<?= $this->decimalpoints ?>));
@@ -1618,10 +1613,22 @@
         var currency = $('#currency').val();
         fetchExchangeRate(currency);
 
+        // Update column header to show selected currency
+        updateConvertedAmountHeader();
+
         // Recalculate all row converted amounts after rate is fetched
         setTimeout(function() {
             recalculateAllConvertedAmounts();
         }, 500);
+    }
+
+    function updateConvertedAmountHeader() {
+        var currency = $('#currency').val();
+        if(currency && currency != 'INR') {
+            $('#convertedAmountHeader').text('Amount in ' + currency);
+        } else {
+            $('#convertedAmountHeader').text('Converted Amount');
+        }
     }
 
     function recalculateAllConvertedAmounts() {
@@ -1641,6 +1648,7 @@
     // Initialize on page load
     $(document).ready(function() {
         var initialCurrency = $('#currency').val();
+        updateConvertedAmountHeader();
         if(initialCurrency && initialCurrency != 'INR') {
             fetchExchangeRate(initialCurrency);
         }
