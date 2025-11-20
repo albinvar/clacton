@@ -45,12 +45,20 @@ class Productstock_model extends MY_Model {
     }
     public function addproductstockbyid($stockid, $qty)
     {
+        // Validate qty to prevent SQL syntax errors
+        if(empty($qty) || !is_numeric($qty)) {
+            $qty = 0;
+        }
     	$this->db->set('pt_stock', 'pt_stock+'.$qty, FALSE);
         $this->db->where('pt_stockid', $stockid);
         $this->db->update('ub_productstock');
     }
     public function reduceproductstockbyid($stockid, $qty)
     {
+        // Validate qty to prevent SQL syntax errors
+        if(empty($qty) || !is_numeric($qty)) {
+            $qty = 0;
+        }
         $this->db->set('pt_stock', 'pt_stock-'.$qty, FALSE);
         $this->db->where('pt_stockid', $stockid);
         $this->db->update('ub_productstock');
