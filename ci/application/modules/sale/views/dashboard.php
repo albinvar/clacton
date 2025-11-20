@@ -320,6 +320,7 @@
                                             <th>Net Rate</th>
                                             <th>Qty</th>
                                             <th width="120px">Total</th>
+                                            <th width="120px" id="convertedAmountHeader">Amount in INR</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -552,8 +553,12 @@
                                                 Discount: <b><span id="discountamt1"></span></b><br/>
                                                 Total: <b><span id="totalamt1"></span></b>
                                             </td>
+                                            <td class="convertedAmountCell">
+                                                <input type="hidden" name="convertedamount[]" id="convertedamount1">
+                                                <b><span id="convertedamountdisplay1">0.00</span></b>
+                                            </td>
                                             <td>
-                                                
+
                                                 <a href="javascript:void(0)" onclick="removeitemrow('1')" title="Delete Row"><i class="fa fa-times-circle"></i></a>
                                                 
                                             </td>
@@ -1216,7 +1221,10 @@
 
             var itemprofit = parseFloat(totallastamount) - parseFloat(purchaseval);
             $('#itemtotalprofit'+no).val(tofixed_amount(itemprofit));
-            
+
+            // Calculate converted amount for this row
+            calculateConvertedAmount(no);
+
             calculatetotalamnt();
         }
     }
@@ -1494,6 +1502,10 @@
                                                 Discount: <b><span id="discountamt`+itemno+`"></span></b><br/>
                                                 Total: <b><span id="totalamt`+itemno+`"></span></b>
                                             </td>
+                                            <td class="convertedAmountCell">
+                                                <input type="hidden" name="convertedamount[]" id="convertedamount`+itemno+`">
+                                                <b><span id="convertedamountdisplay`+itemno+`">0.00</span></b>
+                                            </td>
                                             <td>
                                                 <a href="javascript:void(0)" onclick="removeitemrow('`+itemno+`')" title="Delete Row"><i class="fa fa-times-circle"></i></a>
                                             </td>
@@ -1570,7 +1582,58 @@
     function handleCurrencyChange() {
         var currency = $('#currency').val();
         fetchExchangeRate(currency);
+
+        // Update column header
+        updateConvertedAmountHeader();
+
+        // Recalculate all row converted amounts after rate is fetched
+        setTimeout(function() {
+            recalculateAllConvertedAmounts();
+        }, 500);
     }
+
+    function updateConvertedAmountHeader() {
+        var currency = $('#currency').val();
+        if(currency == 'INR' || currency == '') {
+            $('#convertedAmountHeader').text('Amount in Foreign Currency');
+        } else {
+            $('#convertedAmountHeader').text('Amount in INR');
+        }
+    }
+
+    function calculateConvertedAmount(rowNo) {
+        var currency = $('#currency').val();
+        var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
+        var totalAmount = parseFloat($('#itemtotalamt' + rowNo).val()) || 0;
+
+        var convertedAmount = 0;
+
+        if(currency == 'INR' || currency == '') {
+            // If INR is selected, converted amount is same as total
+            convertedAmount = totalAmount;
+        } else {
+            // Foreign currency: multiply by conversion rate to get INR
+            convertedAmount = totalAmount * conversionRate;
+        }
+
+        // Update the converted amount fields
+        $('#convertedamount' + rowNo).val(convertedAmount.toFixed(<?= $this->decimalpoints ?>));
+        $('#convertedamountdisplay' + rowNo).text(tofixed_amount(convertedAmount));
+    }
+
+    function recalculateAllConvertedAmounts() {
+        // Loop through all rows and recalculate converted amounts
+        for(var i = 1; i <= itemno; i++) {
+            if($('#prdrow' + i).length) {
+                calculateConvertedAmount(i);
+            }
+        }
+    }
+
+    // Also update conversion rate field onchange
+    $('#conversionrate').on('change keyup', function() {
+        recalculateAllConvertedAmounts();
+    });
 
     // Initialize on page load
     $(document).ready(function() {
@@ -1578,6 +1641,7 @@
         if(initialCurrency && initialCurrency != 'INR') {
             fetchExchangeRate(initialCurrency);
         }
+        updateConvertedAmountHeader();
     });
 
 </script>
