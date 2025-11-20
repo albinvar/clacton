@@ -226,6 +226,7 @@
                                         }
                                         ?>
                                     </select>
+                                    <small class="form-text text-warning" id="currencyTaxWarning" style="display: none; font-weight: bold;">⚠ GST/CESS disabled for foreign currency</small>
                                 </div>
 
                                 <div class="col-md-3 mt-2">
@@ -956,7 +957,17 @@
                   $('#batchno'+no).val(result.pt_batchno);
                   $('#expirydate'+no).val(result.pt_expirydate);
 
-                  $("#gst"+no).val(result.tb_tax);
+                  // Check if currency is INR - only apply GST for INR
+                  var currency = $('#currency').val();
+                  var isForeignCurrency = currency && currency != 'INR';
+
+                  if(isForeignCurrency) {
+                      // For foreign currencies, no GST/CESS
+                      $("#gst"+no).val('0');
+                      result.tb_tax = 0; // Override tax for calculations below
+                  } else {
+                      $("#gst"+no).val(result.tb_tax);
+                  }
                  
                   if(result.pd_profittype == 1)
                   {
@@ -1076,6 +1087,14 @@
                   $('#cessamt'+no).html(0);
                   $('#itemdiscountamt'+no).val(0);
                   $('#discountamt'+no).html(0);
+
+                  // Disable tax fields for foreign currencies
+                  if(isForeignCurrency) {
+                      $('#gst'+no).prop('readonly', true);
+                      $('#cess'+no).val('0').prop('readonly', true);
+                  } else {
+                      $('#cess'+no).prop('readonly', false);
+                  }
 
                   var prddet = 'Category: <b>' + result.pc_categoryname + '</b>, HSN: <b>' + result.pd_hsnno + '</b>, Batch: <b>' + result.pt_batchno + '</b>, Expiry: <b>' + result.pt_expirydate + '</b>';
 
@@ -1637,11 +1656,49 @@
         // Update column header to show selected currency
         updateConvertedAmountHeader();
 
+        // Handle tax fields based on currency
+        handleTaxFieldsForCurrency(currency);
+
         // Recalculate all row converted amounts after rate is fetched
         setTimeout(function() {
             recalculateAllConvertedAmounts();
             updateConvertedGrandTotal();
         }, 500);
+    }
+
+    function handleTaxFieldsForCurrency(currency) {
+        // GST/CESS/VAT only apply to INR (Indian Rupee)
+        // For foreign currencies, taxes should be disabled and set to 0
+        var isForeignCurrency = currency && currency != 'INR';
+
+        // Show/hide tax warning
+        if(isForeignCurrency) {
+            $('#currencyTaxWarning').show();
+        } else {
+            $('#currencyTaxWarning').hide();
+        }
+
+        // Loop through all product rows
+        for(var i = 1; i <= itemno; i++) {
+            if($('#prdrow' + i).length) {
+                if(isForeignCurrency) {
+                    // Disable and zero out tax fields for foreign currencies
+                    $('#gst' + i).val('0').prop('readonly', true);
+                    $('#cess' + i).val('0').prop('readonly', true);
+                    $('#itemgstval' + i).val('0');
+                    $('#itemcessval' + i).val('0');
+                    $('#itemgstvalue' + i).text('0');
+                    $('#itemcessvalue' + i).text('0');
+                } else {
+                    // Re-enable tax fields for INR
+                    $('#cess' + i).prop('readonly', false);
+                    // Note: GST field is usually readonly as it comes from product, so we keep it readonly
+                }
+
+                // Recalculate the row with updated tax values
+                calculateitemprice(i);
+            }
+        }
     }
 
     function updateConvertedAmountHeader() {
@@ -1725,6 +1782,9 @@
     $(document).ready(function() {
         var initialCurrency = $('#currency').val();
         updateConvertedAmountHeader();
+
+        // Initialize tax fields based on current currency
+        handleTaxFieldsForCurrency(initialCurrency);
 
         if(initialCurrency && initialCurrency != 'INR') {
             fetchExchangeRate(initialCurrency);
