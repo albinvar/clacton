@@ -9,7 +9,7 @@ class Retailbillmaster_model extends MY_Model {
     public $protected_attributes = array('rb_retailbillid');
     public $primary_key          = 'rb_retailbillid';
 
-    public $selectedfields = 'rb_retailbillid, rb_billprefix, rb_billno, rb_billingtype, rb_date, rb_time, rb_existcustomer, rb_customerid, rb_customername, rb_phone, rb_address, rb_gstno, rb_placeofsupply, rb_vehicleno, rb_salesperson, rb_salephone, rb_shippingaddress, rb_state, rb_billtype, rb_totalamount, rb_discount, rb_totalgstamnt, rb_freight, rb_grandtotal, rb_oldbalance, rb_balanceamount, rb_paidamount, rb_paymentmethod, rb_totprofit, rb_advance100, rb_pagesize, rb_notes, rb_addedby, rb_addedon, rb_isactive, rb_roundoffvalue, rb_partialreturn, rb_orderstatus, rb_ewaybillno, rb_deliverydate, rb_ponumber, rb_podate, rb_returnedon, rb_returncomment, rb_returnamount, rb_godownid';
+    public $selectedfields = 'rb_retailbillid, rb_billprefix, rb_billno, rb_billingtype, rb_date, rb_time, rb_existcustomer, rb_customerid, rb_customername, rb_phone, rb_address, rb_gstno, rb_placeofsupply, rb_vehicleno, rb_salesperson, rb_salephone, rb_shippingaddress, rb_state, rb_currency, rb_conversionrate, rb_country, rb_billtype, rb_totalamount, rb_discount, rb_totalgstamnt, rb_freight, rb_grandtotal, rb_oldbalance, rb_balanceamount, rb_paidamount, rb_paymentmethod, rb_totprofit, rb_advance100, rb_pagesize, rb_notes, rb_addedby, rb_addedon, rb_isactive, rb_roundoffvalue, rb_partialreturn, rb_orderstatus, rb_ewaybillno, rb_deliverydate, rb_ponumber, rb_podate, rb_returnedon, rb_returncomment, rb_returnamount, rb_godownid';
 
     public function getretailbilldetailsbyid($purchaseid)
     {

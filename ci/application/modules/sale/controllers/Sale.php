@@ -2018,11 +2018,20 @@ class Sale extends MY_Controller {
         $this->data['purchaseprodcts'] = $this->retlslv->getsaleproducts($saleid);
         $this->data['duptext'] = "";
 
+        // DEBUG: Show what currency is in the bill
+        echo "<!-- DEBUG INFO -->";
+        echo "<!-- Bill ID: " . $saleid . " -->";
+        echo "<!-- Currency in DB: " . (isset($purchasedet->rb_currency) ? $purchasedet->rb_currency : 'NOT SET') . " -->";
+        echo "<!-- Conversion Rate: " . (isset($purchasedet->rb_conversionrate) ? $purchasedet->rb_conversionrate : 'NOT SET') . " -->";
+        echo "<!-- Country: " . (isset($purchasedet->rb_country) ? $purchasedet->rb_country : 'NOT SET') . " -->";
+
         // Check if this is a foreign currency bill (not INR)
         $is_foreign_currency = false;
         if(isset($purchasedet->rb_currency) && $purchasedet->rb_currency && $purchasedet->rb_currency != 'INR') {
             $is_foreign_currency = true;
         }
+
+        echo "<!-- Is Foreign Currency: " . ($is_foreign_currency ? 'YES' : 'NO') . " -->";
 
         /*if($type == 3)
         {
@@ -2030,19 +2039,22 @@ class Sale extends MY_Controller {
         }else{*/
         if($thermal == 3)
         {
+            echo "<!-- Loading: thermalprint -->";
             $this->load->view('thermalprint', $this->data, FALSE);
         }else{
             // Route to foreign currency template if applicable
             if($is_foreign_currency) {
+                echo "<!-- Loading: saleprint_foreign (FOREIGN CURRENCY) -->";
                 $this->load->view('saleprint_foreign', $this->data, FALSE);
             } else {
+                echo "<!-- Loading: saleprint1 (INR) -->";
                 //$this->load->view('saleprint2', $this->data, FALSE);
                 $this->load->view('saleprint1', $this->data, FALSE);
             }
         }
 
         //}
-        
+
     }
     public function saleprintdup($saleid, $newprint=0, $type=0, $thermal=0, $dup)
     {
