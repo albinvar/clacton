@@ -1125,6 +1125,30 @@
         $('#discountedprice'+no).val(tofixed_amount(discountedprice));
         calculateitemprice(no);
     }
+
+    // ============================================================================
+    // CONVERTED AMOUNT CALCULATION
+    // ============================================================================
+    function calculateConvertedAmount(rowNo) {
+        var currency = $('#currency').val();
+        var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
+        var totalAmount = parseFloat($('#itemtotalamt' + rowNo).val()) || 0;
+
+        var convertedAmount = 0;
+
+        if(currency == 'INR' || currency == '') {
+            // If INR is selected, converted amount is same as total
+            convertedAmount = totalAmount;
+        } else {
+            // Foreign currency: multiply by conversion rate to get INR
+            convertedAmount = totalAmount * conversionRate;
+        }
+
+        // Update the converted amount fields
+        $('#convertedamount' + rowNo).val(convertedAmount.toFixed(<?= $this->decimalpoints ?>));
+        $('#convertedamountdisplay' + rowNo).text(tofixed_amount(convertedAmount));
+    }
+
     function calculateitemprice(no)
     {
         var unitprice = $('#unitprice'+no).val();
@@ -1599,26 +1623,6 @@
         } else {
             $('#convertedAmountHeader').text('Amount in INR');
         }
-    }
-
-    function calculateConvertedAmount(rowNo) {
-        var currency = $('#currency').val();
-        var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
-        var totalAmount = parseFloat($('#itemtotalamt' + rowNo).val()) || 0;
-
-        var convertedAmount = 0;
-
-        if(currency == 'INR' || currency == '') {
-            // If INR is selected, converted amount is same as total
-            convertedAmount = totalAmount;
-        } else {
-            // Foreign currency: multiply by conversion rate to get INR
-            convertedAmount = totalAmount * conversionRate;
-        }
-
-        // Update the converted amount fields
-        $('#convertedamount' + rowNo).val(convertedAmount.toFixed(<?= $this->decimalpoints ?>));
-        $('#convertedamountdisplay' + rowNo).text(tofixed_amount(convertedAmount));
     }
 
     function recalculateAllConvertedAmounts() {
