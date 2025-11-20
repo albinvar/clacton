@@ -234,8 +234,8 @@
                                         <input type="number" step="0.000001" name="conversionrate" id="conversionrate"
                                                value="<?php if(isset($editdata)){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>"
                                                class="inputfieldcss" style="flex: 1;">
-                                        <button type="button" onclick="updateConversions()" class="btn btn-sm btn-primary" title="Update all conversions" style="padding: 5px 10px;">
-                                            <i class="fa fa-refresh"></i>
+                                        <button type="button" onclick="updateConversions()" class="btn btn-sm btn-primary" title="Update all conversions" style="padding: 5px 12px; font-weight: bold;">
+                                            ⟳
                                         </button>
                                     </div>
                                     <small class="form-text text-muted" id="rateinfo">1 INR = 1 INR</small>
@@ -1655,12 +1655,14 @@
         // Visual feedback
         var btn = event.target.closest('button');
         var originalHTML = btn.innerHTML;
-        btn.innerHTML = '<i class="fa fa-check"></i>';
+        btn.innerHTML = '✓';
+        btn.style.fontSize = '18px';
         btn.classList.add('btn-success');
         btn.classList.remove('btn-primary');
 
         setTimeout(function() {
             btn.innerHTML = originalHTML;
+            btn.style.fontSize = '';
             btn.classList.remove('btn-success');
             btn.classList.add('btn-primary');
         }, 1000);
