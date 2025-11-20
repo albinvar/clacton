@@ -23,13 +23,13 @@
   }
 
   .page-header {
-    height: 275px;
+    height: 315px;
     width: 98%;
     margin-left: 5px;
     margin-top: 5px;
   }
   .page-header-space{
-    height: 275px;
+    height: 315px;
   }
   .billitemstr{
     font-size: 13px;
