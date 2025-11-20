@@ -320,7 +320,7 @@
                                             <th>Net Rate</th>
                                             <th>Qty</th>
                                             <th width="120px">Total</th>
-                                            <th width="120px" id="convertedAmountHeader">Amount in INR</th>
+                                            <th width="120px" id="convertedAmountHeader">Converted Amount</th>
                                             <th></th>
                                         </tr>
                                     </thead>
@@ -1137,10 +1137,12 @@
         var convertedAmount = 0;
 
         if(currency == 'INR' || currency == '') {
-            // If INR is selected, converted amount is same as total
-            convertedAmount = totalAmount;
+            // Billing in INR: Show foreign currency equivalent (divide by rate)
+            // Example: ₹88.75 / 88.75 rate = $1.00
+            convertedAmount = totalAmount / conversionRate;
         } else {
-            // Foreign currency: multiply by conversion rate to get INR
+            // Billing in foreign currency: Show INR equivalent (multiply by rate)
+            // Example: $1.00 * 88.75 rate = ₹88.75
             convertedAmount = totalAmount * conversionRate;
         }
 
@@ -1607,22 +1609,10 @@
         var currency = $('#currency').val();
         fetchExchangeRate(currency);
 
-        // Update column header
-        updateConvertedAmountHeader();
-
         // Recalculate all row converted amounts after rate is fetched
         setTimeout(function() {
             recalculateAllConvertedAmounts();
         }, 500);
-    }
-
-    function updateConvertedAmountHeader() {
-        var currency = $('#currency').val();
-        if(currency == 'INR' || currency == '') {
-            $('#convertedAmountHeader').text('Amount in Foreign Currency');
-        } else {
-            $('#convertedAmountHeader').text('Amount in INR');
-        }
     }
 
     function recalculateAllConvertedAmounts() {
@@ -1645,7 +1635,6 @@
         if(initialCurrency && initialCurrency != 'INR') {
             fetchExchangeRate(initialCurrency);
         }
-        updateConvertedAmountHeader();
     });
 
 </script>
