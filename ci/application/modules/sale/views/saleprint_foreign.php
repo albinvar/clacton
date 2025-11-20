@@ -23,13 +23,13 @@
   }
 
   .page-header {
-    height: 315px;
+    height: 275px;
     width: 98%;
     margin-left: 5px;
     margin-top: 5px;
   }
   .page-header-space{
-    height: 315px;
+    height: 275px;
   }
   .billitemstr{
     font-size: 13px;
@@ -240,12 +240,6 @@ if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
             </td>
         </tr>
     </tbody>
-    </table>
-
-    <table width="100%" style="margin-top: 5px; margin-bottom: 40px;">
-        <tr>
-            <td width="50%">Sale Person: <?= isset($purchasedet->at_name) ? $purchasedet->at_name : '' ?></td>
-        </tr>
     </table>
 
     </div>
