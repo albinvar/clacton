@@ -1132,18 +1132,27 @@
     function calculateConvertedAmount(rowNo) {
         var currency = $('#currency').val();
         var conversionRate = parseFloat($('#conversionrate').val()) || 1.0;
-        var totalAmount = parseFloat($('#itemtotalamt' + rowNo).val()) || 0;
+
+        // Use Net Amount (before tax) for conversion, not Total Amount
+        var netAmount = parseFloat($('#itemnetamt' + rowNo).val()) || 0;
+
+        if(netAmount == 0 || isNaN(netAmount)) {
+            // No amount to convert
+            $('#convertedamount' + rowNo).val('0.00');
+            $('#convertedamountdisplay' + rowNo).text('0.00');
+            return;
+        }
 
         var convertedAmount = 0;
 
         if(currency == 'INR' || currency == '') {
             // Billing in INR: Show foreign currency equivalent (divide by rate)
-            // Example: ₹88.75 / 88.75 rate = $1.00
-            convertedAmount = totalAmount / conversionRate;
+            // Example: ₹81.40 / 88.56 rate = $0.92 USD
+            convertedAmount = netAmount / conversionRate;
         } else {
             // Billing in foreign currency: Show INR equivalent (multiply by rate)
-            // Example: $1.00 * 88.75 rate = ₹88.75
-            convertedAmount = totalAmount * conversionRate;
+            // Example: $1.00 * 88.56 rate = ₹88.56
+            convertedAmount = netAmount * conversionRate;
         }
 
         // Update the converted amount fields
