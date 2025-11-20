@@ -152,7 +152,26 @@
                                         <input type="text" class="form-control" value="<?=(isset($editdata)) ? $editdata->ct_gstin : ''?>" id="gstno" name="gstno" placeholder="<?= $this->isvatgstname ?>">
                                     </div>
                                 </div>
-                                <?php 
+
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Preferred Currency</label>
+                                        <select class="form-select" name="currency" id="currency">
+                                            <?php
+                                            $this->load->helper('currency');
+                                            $currencies = get_currencies();
+                                            $selected_currency = isset($editdata) && $editdata->ct_currency ? $editdata->ct_currency : 'INR';
+                                            foreach($currencies as $code => $curr) {
+                                                $selected = ($code == $selected_currency) ? 'selected' : '';
+                                                echo "<option value='{$code}' {$selected}>{$curr['name']} ({$curr['symbol']})</option>";
+                                            }
+                                            ?>
+                                        </select>
+                                        <small class="form-text text-muted">Select the currency for billing this customer</small>
+                                    </div>
+                                </div>
+
+                                <?php
                                 $isledgerentry= 0;
                                 if(isset($custledgr))
                                 {
@@ -173,7 +192,7 @@
                                         <input type="number" value="<?=(isset($editdata)) ? $editdata->ct_balanceamount : '0'?>" class="form-control" id="balanceamnt" name="balanceamnt" placeholder="Amount">
                                     </div>
                                 </div>
-                                <?php 
+                                <?php
                                 }
                                 ?>
                             </div>

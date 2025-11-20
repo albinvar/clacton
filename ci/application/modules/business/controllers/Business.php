@@ -714,6 +714,7 @@ class Business extends MY_Controller {
         $gstno = $this->input->post('gstno');
         $balanceamnt = $this->input->post('balanceamnt');
         $isledgerentry = $this->input->post('isledgerentry');
+        $currency = $this->input->post('currency');
 
         $customertype= $this->input->post('customertype');
 
@@ -731,6 +732,7 @@ class Business extends MY_Controller {
                     'ct_mobile' => $mobile,
                     'ct_email' => $email,
                     'ct_gstin' => $gstno,
+                    'ct_currency' => $currency ? $currency : 'INR',
                     'ct_type' => $customertype,
                     'ct_balanceamount' => $balanceamnt,
                     'ct_updatedon'     => $this->updatedon,
@@ -751,6 +753,7 @@ class Business extends MY_Controller {
                 'ct_mobile' => $mobile,
                 'ct_email' => $email,
                 'ct_gstin' => $gstno,
+                'ct_currency' => $currency ? $currency : 'INR',
                 'ct_type' => $customertype,
                 'ct_updatedon'     => $this->updatedon,
                 'ct_updatedby'     => $this->loggeduserid,
