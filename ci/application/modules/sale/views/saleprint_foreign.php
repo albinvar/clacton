@@ -122,9 +122,9 @@ $conversion_rate = isset($purchasedet->rb_conversionrate) ? $purchasedet->rb_con
 $country_name = '';
 if(isset($purchasedet->rb_country) && $purchasedet->rb_country) {
     $this->load->model('Country_model', 'cuntry');
-    $country_data = $this->cuntry->getcountrybyid($purchasedet->rb_country);
+    $country_data = $this->cuntry->get($purchasedet->rb_country);
     if($country_data) {
-        $country_name = $country_data->cs_countryname;
+        $country_name = $country_data->name;
     }
 }
 ?>
