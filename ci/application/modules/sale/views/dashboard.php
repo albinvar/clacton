@@ -230,9 +230,14 @@
 
                                 <div class="col-md-3 mt-2">
                                     <label>Conversion Rate (to INR)</label>
-                                    <input type="number" step="0.000001" name="conversionrate" id="conversionrate"
-                                           value="<?php if(isset($editdata)){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>"
-                                           class="w-100 inputfieldcss">
+                                    <div style="display: flex; gap: 5px; align-items: center;">
+                                        <input type="number" step="0.000001" name="conversionrate" id="conversionrate"
+                                               value="<?php if(isset($editdata)){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>"
+                                               class="inputfieldcss" style="flex: 1;">
+                                        <button type="button" onclick="updateConversions()" class="btn btn-sm btn-primary" title="Update all conversions" style="padding: 5px 10px;">
+                                            <i class="fa fa-refresh"></i>
+                                        </button>
+                                    </div>
                                     <small class="form-text text-muted" id="rateinfo">1 INR = 1 INR</small>
                                 </div>
 
@@ -1642,6 +1647,25 @@
         }
     }
 
+    // Manual update button click handler
+    function updateConversions() {
+        console.log('Manual update triggered - Rate:', $('#conversionrate').val());
+        recalculateAllConvertedAmounts();
+
+        // Visual feedback
+        var btn = event.target.closest('button');
+        var originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fa fa-check"></i>';
+        btn.classList.add('btn-success');
+        btn.classList.remove('btn-primary');
+
+        setTimeout(function() {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+        }, 1000);
+    }
+
     // Initialize on page load
     $(document).ready(function() {
         var initialCurrency = $('#currency').val();
@@ -1651,10 +1675,19 @@
             fetchExchangeRate(initialCurrency);
         }
 
-        // Update all converted amounts when conversion rate is manually edited
-        $('#conversionrate').on('change keyup blur', function() {
-            console.log('Conversion rate changed to:', $(this).val());
+        // Update all converted amounts when conversion rate field loses focus
+        $('#conversionrate').on('blur', function() {
+            console.log('Conversion rate field blur - Rate:', $(this).val());
             recalculateAllConvertedAmounts();
+        });
+
+        // Also allow Enter key to trigger update
+        $('#conversionrate').on('keypress', function(e) {
+            if(e.which == 13) { // Enter key
+                console.log('Enter pressed on conversion rate');
+                $(this).blur(); // Trigger blur which recalculates
+                e.preventDefault();
+            }
         });
     });
 
