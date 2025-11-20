@@ -886,6 +886,7 @@ class Sale extends MY_Controller {
         $shippingaddress = $this->input->post('shippingaddress');
         $godownid = $this->input->post('godownid');
         $stateid = $this->input->post('stateid');
+        $countryid = $this->input->post('countryid');
         $currency = $this->input->post('currency');
         $conversionrate = $this->input->post('conversionrate');
 
@@ -1067,6 +1068,7 @@ class Sale extends MY_Controller {
         $shippingaddress = $this->input->post('shippingaddress');
         $godownid = $this->input->post('godownid');
         $stateid = $this->input->post('stateid');
+        $countryid = $this->input->post('countryid');
         $currency = $this->input->post('currency');
         $conversionrate = $this->input->post('conversionrate');
 
@@ -1152,6 +1154,7 @@ class Sale extends MY_Controller {
                     'rb_salesperson' => $salesperson,
                     'rb_shippingaddress' => $shippingaddress,
                     'rb_state'      => $stateid,
+                    'rb_country'    => $countryid,
                     'rb_currency'   => $currency ? $currency : 'INR',
                     'rb_conversionrate' => $conversionrate ? $conversionrate : 1.000000,
                     'rb_billtype'   => $billtype,
@@ -1614,6 +1617,7 @@ class Sale extends MY_Controller {
         $shippingaddress = $this->input->post('shippingaddress');
         $godownid = $this->input->post('godownid');
         $stateid = $this->input->post('stateid');
+        $countryid = $this->input->post('countryid');
         $currency = $this->input->post('currency');
         $conversionrate = $this->input->post('conversionrate');
 

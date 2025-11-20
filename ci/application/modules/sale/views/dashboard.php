@@ -196,6 +196,24 @@
                                 </div>
 
                                 <div class="col-md-3 mt-2">
+                                    <label>Country</label>
+                                    <select name="countryid" id="countryid" class="w-100 inputfieldcss pagesearchselect">
+                                        <option value="">Select Country</option>
+                                        <?php
+                                        $this->load->model('Country_model', 'cuntry');
+                                        $countries = $this->cuntry->getalldata();
+                                        $selected_country = isset($editdata) && $editdata->rb_country ? $editdata->rb_country : '101';
+                                        if($countries) {
+                                            foreach($countries as $cntry) {
+                                                $selected = ($cntry->id == $selected_country) ? 'selected' : '';
+                                                echo "<option value='{$cntry->id}' {$selected}>{$cntry->name}</option>";
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3 mt-2">
                                     <label>Currency</label>
                                     <select class="w-100 inputfieldcss" name="currency" id="currency" onchange="handleCurrencyChange()">
                                         <?php
@@ -214,7 +232,7 @@
                                     <label>Conversion Rate (to INR)</label>
                                     <input type="number" step="0.000001" name="conversionrate" id="conversionrate"
                                            value="<?php if(isset($editdata)){ echo $editdata->rb_conversionrate; }else{ echo '1.000000'; } ?>"
-                                           class="w-100 inputfieldcss" readonly style="background-color: #f0f0f0;">
+                                           class="w-100 inputfieldcss">
                                     <small class="form-text text-muted" id="rateinfo">1 INR = 1 INR</small>
                                 </div>
 
@@ -1343,6 +1361,11 @@
               $("#stateid").val(result.ct_state);
               //$('#stateid').selectpicker();
 
+              // Handle customer country
+              if(result.ct_country && result.ct_country != '') {
+                  $('#countryid').val(result.ct_country);
+              }
+
               // Handle customer currency
               if(result.ct_currency && result.ct_currency != '') {
                   $('#currency').val(result.ct_currency);
@@ -1531,17 +1554,14 @@
             success: function(response) {
                 if(response.error) {
                     $('#rateinfo').html('<span class="text-danger">API unavailable. Please enter rate manually.</span>');
-                    $('#conversionrate').prop('readonly', false).css('background-color', '#fff');
                     $('#conversionrate').focus();
                 } else if(response.rate) {
                     $('#conversionrate').val(parseFloat(response.rate).toFixed(6));
                     $('#rateinfo').html('1 ' + currency + ' = <strong>' + parseFloat(response.rate).toFixed(4) + '</strong> INR');
-                    $('#conversionrate').prop('readonly', true).css('background-color', '#f0f0f0');
                 }
             },
             error: function() {
                 $('#rateinfo').html('<span class="text-danger">Failed to fetch rate. Please enter manually.</span>');
-                $('#conversionrate').prop('readonly', false).css('background-color', '#fff');
                 $('#conversionrate').focus();
             }
         });
